@@ -1,521 +1,1886 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<script>
-  // Phones: show the desktop layout (form + preview side by side) shrunk to fit the screen
-  (function () {
-    const root = document.documentElement;
-    function phoneZoom() {
-      const w = Math.min(screen.width, root.clientWidth || screen.width);
-      const isPhone = Math.min(screen.width, screen.height) < 700;
-      root.classList.toggle("phone", isPhone);
-      root.style.setProperty("--phone-zoom", isPhone ? Math.min(1, w / 1000) : 1);
-    }
-    phoneZoom();
-    window.addEventListener("resize", phoneZoom);
-    window.addEventListener("orientationchange", phoneZoom);
-  })();
-</script>
-<title>UITS Cover Page Generator</title>
-<script>
-  try { const t = localStorage.getItem("uits-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
-</script>
-<script src="logo.js"></script>
-<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
-<style>
-  :root {
-    --maroon: #8a1c22;
-    --maroon-dark: #6d1419;
-    --bg: #ffffff;
-    --panel: #f6ecec;
-    --border: #e3c9cb;
-    --text: #222;
-    --muted: #6b5b5c;
-    --accent: #8a1c22;
-    --field: #ffffff;
-    --hover: #fbf3f3;
-    color-scheme: light;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #17181b;
-      --panel: #232428;
-      --border: #3a3b41;
-      --text: #e8e6e6;
-      --muted: #a5a0a1;
-      --accent: #e9858b;
-      --field: #1b1c20;
-      --hover: #2d2023;
-      color-scheme: dark;
-    }
-  }
-  :root[data-theme="dark"] {
-    --bg: #17181b;
-    --panel: #232428;
-    --border: #3a3b41;
-    --text: #e8e6e6;
-    --muted: #a5a0a1;
-    --accent: #e9858b;
-    --field: #1b1c20;
-    --hover: #2d2023;
-    color-scheme: dark;
-  }
-  * { box-sizing: border-box; }
-  html, body { height: 100%; }
-  body {
-    margin: 0;
-    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
-    color: var(--text);
-    background: var(--bg);
-    transition: background .2s, color .2s;
-    display: flex; flex-direction: column;
-  }
-  header {
-    padding: 10px 16px 6px; width: 100%; max-width: 1400px; margin: 0 auto;
-    display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
-  }
-  header h1 { margin: 0; color: var(--accent); font-size: 22px; }
-  header p { margin: 0; color: var(--muted); font-size: 13px; }
-  .theme-btn {
-    margin-left: auto; align-self: center; display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 12px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
-    border-radius: 999px; border: 1px solid var(--border); background: var(--panel); color: var(--text);
-  }
-  .theme-btn:hover { border-color: var(--accent); }
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      // Phones: show the desktop layout (form + preview side by side) shrunk to fit the screen
+      (function () {
+        const root = document.documentElement;
+        function phoneZoom() {
+          const w = Math.min(screen.width, root.clientWidth || screen.width);
+          const isPhone = Math.min(screen.width, screen.height) < 700;
+          root.classList.toggle("phone", isPhone);
+          root.style.setProperty(
+            "--phone-zoom",
+            isPhone ? Math.min(1, w / 1000) : 1,
+          );
+        }
+        phoneZoom();
+        window.addEventListener("resize", phoneZoom);
+        window.addEventListener("orientationchange", phoneZoom);
+      })();
+    </script>
+    <title>UITS Cover Page Generator</title>
+    <script>
+      try {
+        const t = localStorage.getItem("uits-theme");
+        if (t) document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+    <script src="logo.js"></script>
+    <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+    <style>
+      :root {
+        --maroon: #8a1c22;
+        --maroon-dark: #6d1419;
+        --bg: #ffffff;
+        --panel: #f6ecec;
+        --border: #e3c9cb;
+        --text: #222;
+        --muted: #6b5b5c;
+        --accent: #8a1c22;
+        --field: #ffffff;
+        --hover: #fbf3f3;
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --bg: #17181b;
+          --panel: #232428;
+          --border: #3a3b41;
+          --text: #e8e6e6;
+          --muted: #a5a0a1;
+          --accent: #e9858b;
+          --field: #1b1c20;
+          --hover: #2d2023;
+          color-scheme: dark;
+        }
+      }
+      :root[data-theme="dark"] {
+        --bg: #17181b;
+        --panel: #232428;
+        --border: #3a3b41;
+        --text: #e8e6e6;
+        --muted: #a5a0a1;
+        --accent: #e9858b;
+        --field: #1b1c20;
+        --hover: #2d2023;
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        font-family:
+          "Segoe UI",
+          system-ui,
+          -apple-system,
+          Roboto,
+          Arial,
+          sans-serif;
+        color: var(--text);
+        background: var(--bg);
+        transition:
+          background 0.2s,
+          color 0.2s;
+        display: flex;
+        flex-direction: column;
+      }
+      header {
+        padding: 10px 16px 6px;
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      header h1 {
+        margin: 0;
+        color: var(--accent);
+        font-size: 22px;
+      }
+      header p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .theme-btn {
+        margin-left: auto;
+        align-self: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        font-size: 13px;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--panel);
+        color: var(--text);
+      }
+      .theme-btn:hover {
+        border-color: var(--accent);
+      }
 
-  main {
-    flex: 1; min-height: 0; width: 100%; max-width: 1400px; margin: 0 auto;
-    padding: 4px 16px 12px;
-    display: grid; grid-template-columns: minmax(0, 620px) minmax(0, 1fr); gap: 16px;
-  }
+      main {
+        flex: 1;
+        min-height: 0;
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 4px 16px 12px;
+        display: grid;
+        grid-template-columns: minmax(0, 620px) minmax(0, 1fr);
+        gap: 16px;
+      }
 
-  .panel {
-    background: var(--panel); border: 1px solid var(--border);
-    border-radius: 12px; padding: 12px 14px;
-  }
-  form.panel {
-    display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
-    column-gap: 10px; align-content: space-between; overflow: auto;
-  }
-  .f2 { grid-column: span 2; } .f3 { grid-column: span 3; }
-  .f4 { grid-column: span 4; } .f6 { grid-column: span 6; }
-  .section-title {
-    grid-column: span 6;
-    font-size: clamp(11px, 1.3vh, 13px); text-transform: uppercase; letter-spacing: .06em;
-    color: var(--accent); font-weight: 700; margin: 8px 0 0;
-    border-bottom: 1px solid var(--border); padding-bottom: 2px;
-  }
-  .section-title:first-child { margin-top: 0; }
-  label { display: block; font-size: clamp(12px, 1.45vh, 15px); font-weight: 600; margin: 6px 0 3px; }
-  input, select {
-    width: 100%; height: clamp(30px, 4.3vh, 46px); padding: 4px 10px; font-size: clamp(14px, 1.7vh, 17px);
-    border: 1px solid var(--border); border-radius: 7px; background: var(--field); color: var(--text);
-    font-family: inherit;
-  }
-  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 14px;
+      }
+      form.panel {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        column-gap: 10px;
+        align-content: space-between;
+        overflow: auto;
+      }
+      .f1 {
+        grid-column: span 1;
+      }
+      .f2 {
+        grid-column: span 2;
+      }
+      .f3 {
+        grid-column: span 3;
+      }
+      .f4 {
+        grid-column: span 4;
+      }
+      .f6 {
+        grid-column: span 6;
+      }
+      .team-m-hdr {
+        grid-column: span 6;
+        font-size: clamp(10px, 1.2vh, 12px);
+        font-weight: 700;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 6px 0 2px;
+      }
+      .section-title {
+        grid-column: span 6;
+        font-size: clamp(11px, 1.3vh, 13px);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--accent);
+        font-weight: 700;
+        margin: 8px 0 0;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 2px;
+      }
+      .section-title:first-child {
+        margin-top: 0;
+      }
+      label {
+        display: block;
+        font-size: clamp(12px, 1.45vh, 15px);
+        font-weight: 600;
+        margin: 6px 0 3px;
+      }
+      input,
+      select {
+        width: 100%;
+        height: clamp(30px, 4.3vh, 46px);
+        padding: 4px 10px;
+        font-size: clamp(14px, 1.7vh, 17px);
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        background: var(--field);
+        color: var(--text);
+        font-family: inherit;
+      }
+      input:focus,
+      select:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: -1px;
+        border-color: transparent;
+      }
 
-  .btn {
-    display: block; width: 100%; height: clamp(38px, 5.4vh, 56px); padding: 0 10px; font-size: clamp(15px, 1.8vh, 18px); font-weight: 600;
-    border-radius: 8px; cursor: pointer; border: 1px solid var(--maroon); font-family: inherit;
-  }
-  .btn-primary { background: var(--maroon); color: #fff; }
-  .btn-primary:hover { background: var(--maroon-dark); }
-  .btn-outline { background: var(--field); color: var(--accent); border-color: var(--accent); }
-  .btn-outline:hover { background: var(--hover); }
-  .btn-small { height: clamp(30px, 4.3vh, 46px); padding: 0 10px; font-size: clamp(12px, 1.5vh, 15px); font-weight: 600; }
-  .clear-wrap { display: flex; align-items: flex-end; }
-  .actions { grid-column: span 6; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-  @media (max-height: 620px) {
-    label { margin: 4px 0 2px; }
-    input, select, .btn-small { height: 30px; }
-    .btn { height: 36px; }
-    header { padding: 6px 16px 2px; }
-    header h1 { font-size: 18px; }
-    header p { display: none; }
-    .section-title { margin-top: 5px; }
-    .actions { margin-top: 8px; }
-  }
+      .btn {
+        display: block;
+        width: 100%;
+        height: clamp(38px, 5.4vh, 56px);
+        padding: 0 10px;
+        font-size: clamp(15px, 1.8vh, 18px);
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        border: 1px solid var(--maroon);
+        font-family: inherit;
+      }
+      .btn-primary {
+        background: var(--maroon);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--maroon-dark);
+      }
+      .btn-outline {
+        background: var(--field);
+        color: var(--accent);
+        border-color: var(--accent);
+      }
+      .btn-outline:hover {
+        background: var(--hover);
+      }
+      .btn-small {
+        height: clamp(30px, 4.3vh, 46px);
+        padding: 0 10px;
+        font-size: clamp(12px, 1.5vh, 15px);
+        font-weight: 600;
+      }
+      .clear-wrap {
+        display: flex;
+        align-items: flex-end;
+      }
+      .actions {
+        grid-column: span 6;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 10px;
+      }
 
-  .preview-panel { display: flex; flex-direction: column; min-height: 0; }
-  .preview-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-  .page-wrap { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+      /* Checkbox pills for Teacher (1, 2) and Student (1, 2, 3, 4) */
+      .check-pill-group {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .check-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 0 14px;
+        min-width: 52px;
+        height: clamp(30px, 4.3vh, 46px);
+        border-radius: 8px;
+        border: 1.5px solid var(--border);
+        background: var(--field);
+        color: var(--text);
+        cursor: pointer;
+        user-select: none;
+        font-size: clamp(13px, 1.6vh, 15px);
+        font-weight: 600;
+        transition: all 0.15s ease;
+        box-sizing: border-box;
+        position: relative;
+      }
+      .check-pill:hover {
+        border-color: var(--accent);
+        background: var(--hover);
+      }
+      .check-pill input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+        pointer-events: none;
+      }
+      .check-pill .square-cb {
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+        border: 1.5px solid var(--border);
+        background: var(--panel);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: all 0.15s ease;
+      }
+      .check-pill .square-cb::after {
+        content: "";
+        display: none;
+        width: 4px;
+        height: 8px;
+        border: solid #fff;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg) translate(-0.5px, -1px);
+      }
+      .check-pill.active {
+        border-color: var(--accent);
+        background: rgba(138, 28, 34, 0.08);
+        color: var(--accent);
+        font-weight: 700;
+      }
+      :root[data-theme="dark"] .check-pill.active,
+      :root:not([data-theme="light"]) .check-pill.active {
+        background: rgba(233, 133, 139, 0.15);
+      }
+      .check-pill.active .square-cb {
+        background: var(--maroon);
+        border-color: var(--maroon);
+      }
+      :root[data-theme="dark"] .check-pill.active .square-cb,
+      :root:not([data-theme="light"]) .check-pill.active .square-cb {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+      .check-pill.active .square-cb::after {
+        display: block;
+      }
 
-  /* A4 page at 96dpi: 794 x 1123 px — always white like real paper */
-  .page {
-    position: absolute; top: 0; left: 50%;
-    width: 794px; height: 1123px; background: #fff;
-    padding: 58px 86px; box-shadow: 0 2px 12px rgba(0,0,0,.15);
-    font-family: "Times New Roman", Times, serif; font-size: 16pt; color: #000;
-    transform-origin: top left;
-  }
-  .page .logo { display: block; width: 605px; height: auto; margin: 0 auto; }
-  .page .heading { text-align: center; font-size: 24pt; margin: 22px 0 0; }
-  .page .heading:empty { display: none; }
-  .page .heading:empty + .doc-type { margin-top: 22px; }
-  .page .doc-type { text-align: center; font-size: 24pt; text-decoration: underline; margin: 10px 0 34px; }
-  .page .line { margin: 0 0 10px; display: flex; }
-  .page .line .k { flex: 0 0 170px; white-space: nowrap; }
-  .page .by .line .k { flex: 0 0 200px; white-space: nowrap; }
-  .page .line .v { flex: 1; }
-  .page .sub { font-size: 16pt; text-decoration: underline; margin: 0 0 12px; }
-  .page .to { margin-top: 44px; min-height: 270px; }
-  .page .to p { margin: 0 0 4px; }
-  .page .to .tname { font-weight: bold; }
+      @media (max-height: 620px) {
+        label {
+          margin: 4px 0 2px;
+        }
+        input,
+        select,
+        .btn-small,
+        .check-pill {
+          height: 30px;
+        }
+        .btn {
+          height: 36px;
+        }
+        header {
+          padding: 6px 16px 2px;
+        }
+        header h1 {
+          font-size: 18px;
+        }
+        header p {
+          display: none;
+        }
+        .section-title {
+          margin-top: 5px;
+        }
+        .actions {
+          margin-top: 8px;
+        }
+      }
 
-  /* Phones / small windows: stack and allow normal scrolling */
-  @media (max-width: 900px) {
-    body { display: block; height: auto; }
-    main { grid-template-columns: 1fr; }
-    form.panel { overflow: visible; }
-    .page-wrap { flex: none; height: 600px; }
-  }
+      .preview-panel {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+      .preview-label {
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      .page-wrap {
+        flex: 1;
+        min-height: 0;
+        position: relative;
+        overflow: hidden;
+      }
 
-  /* Phone: desktop layout at a fixed 1000px width, content sits at the top */
-  html.phone, html.phone body { height: auto; }
-  html.phone body { display: block; width: 1000px; zoom: var(--phone-zoom, 1); }
-  html.phone main { grid-template-columns: 1.15fr 1fr; align-items: stretch; }
-  html.phone form.panel { align-content: space-between; overflow: visible; }
-  html.phone label { font-size: 12px; margin: 6px 0 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  html.phone .section-title { font-size: 11px; margin-top: 10px; }
-  html.phone .section-title:first-child { margin-top: 0; }
-  html.phone input, html.phone select, html.phone .btn-small { height: 34px; font-size: 14px; }
-  html.phone .btn-small { font-size: 12px; }
-  html.phone .btn { height: 40px; font-size: 15px; }
-  html.phone .actions { margin-top: 14px; }
-  html.phone .page-wrap { flex: none; aspect-ratio: 794 / 1123; height: auto; }
+      /* A4 page at 96dpi: 794 x 1123 px — always white like real paper */
+      .page {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 794px;
+        height: 1123px;
+        background: #fff;
+        padding: 58px 86px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+        font-family: "Times New Roman", Times, serif;
+        font-size: 16pt;
+        color: #000;
+        transform-origin: top left;
+      }
+      .page .logo {
+        display: block;
+        width: 605px;
+        height: auto;
+        margin: 0 auto;
+      }
+      .page .doc-header-wrap {
+        text-align: center;
+        margin: 22px 0 34px;
+      }
+      .page .doc-type.solo {
+        font-size: 24pt;
+        font-weight: normal;
+        text-decoration: underline;
+        margin: 0;
+      }
+      .page .doc-type.with-topic {
+        font-size: 22pt;
+        font-weight: bold;
+        text-decoration: none;
+        margin: 0 0 6px;
+      }
+      .page .topic-on {
+        font-size: 16pt;
+        font-weight: normal;
+        text-decoration: none;
+        margin: 0 0 6px;
+        line-height: 1.2;
+      }
+      .page .topic-title {
+        font-size: 20pt;
+        font-weight: normal;
+        text-decoration: none;
+        margin: 0;
+        line-height: 1.25;
+      }
+      .page .line {
+        margin: 0 0 10px;
+        display: flex;
+      }
+      .page .line .k {
+        flex: 0 0 170px;
+        white-space: nowrap;
+      }
+      .page .by .line .k {
+        flex: 0 0 200px;
+        white-space: nowrap;
+      }
+      .page .line .v {
+        flex: 1;
+      }
+      .page .sub {
+        font-size: 16pt;
+        text-decoration: underline;
+        margin: 0 0 12px;
+      }
+      .page .to {
+        margin-top: 44px;
+        min-height: 270px;
+      }
+      .page .to p {
+        margin: 0 0 4px;
+      }
+      .page .to .tname {
+        font-weight: bold;
+      }
+      .page .teacher-grid.cols-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        font-family: "Times New Roman", Times, serif;
+        font-size: 15pt;
+        line-height: 1.35;
+      }
+      .page .teacher-col p {
+        margin: 0 0 4px;
+      }
+      .page .teacher-col .tname {
+        font-weight: bold;
+      }
 
-  @media print {
-    @page { size: A4; margin: 0; }
-    html, body { height: auto !important; margin: 0 !important; background: #fff !important; }
-    body { display: block !important; zoom: 1 !important; width: auto !important; }
-    header, form.panel, .preview-label { display: none !important; }
-    main, .preview-panel, .page-wrap {
-      display: block !important; padding: 0 !important; margin: 0 !important; border: 0 !important;
-      background: none !important; height: auto !important; max-width: none !important; overflow: visible !important;
-    }
-    .page {
-      position: static !important; transform: none !important; box-shadow: none !important;
-      width: 210mm !important; height: 296mm !important; overflow: hidden !important;
-      page-break-after: avoid; break-after: avoid; break-inside: avoid;
-      -webkit-print-color-adjust: exact; print-color-adjust: exact;
-    }
-  }
-</style>
-</head>
-<body>
-<header>
-  <h1>UITS Assignment / Lab Report Cover Page Generator</h1>
-  <button type="button" class="theme-btn" id="themeBtn" aria-label="Toggle dark mode"></button>
-</header>
+      /* Team members section on the A4 page: numbered "Name (ID)" list */
+      .page .team-list {
+        margin: 0 0 18px;
+      }
+      .page .team-list .team-item {
+        margin: 0 0 10px;
+      }
 
-<main>
-  <form class="panel" id="form" autocomplete="on" onsubmit="return false">
-    <div class="section-title">Document</div>
-    <div class="f2">
-      <label for="docType">Document Type</label>
-      <select id="docType">
-        <option value="Assignment">Assignment</option>
-        <option value="Lab Report">Lab Report</option>
-        <option value="Project Report">Project Report</option>
-        <option value="Justification Form">Justification Form</option>
-      </select>
-    </div>
-    <div class="f2">
-      <label for="docNo">No. (optional)</label>
-      <input id="docNo" placeholder="e.g. 1">
-    </div>
-    <div class="f2">
-      <label for="date">Date of Submission</label>
-      <input id="date" type="date">
-    </div>
-    <div class="f6">
-      <label for="topic">Course Topic/Title (optional)</label>
-      <input id="topic" placeholder="Shown at the top, above Assignment / Lab Report">
-    </div>
+      /* Phones / small windows: stack and allow normal scrolling */
+      @media (max-width: 900px) {
+        body {
+          display: block;
+          height: auto;
+        }
+        main {
+          grid-template-columns: 1fr;
+        }
+        form.panel {
+          overflow: visible;
+        }
+        .page-wrap {
+          flex: none;
+          height: 600px;
+        }
+      }
 
-    <div class="section-title">Course</div>
-    <div class="f2">
-      <label for="courseTitle">Course Title</label>
-      <input id="courseTitle" placeholder="e.g. Data Structures">
-    </div>
-    <div class="f2">
-      <label for="courseCode">Course Code</label>
-      <input id="courseCode" placeholder="e.g. CSE 221">
-    </div>
-    <div class="f2">
-      <label for="expNo">Experiment No. (optional)</label>
-      <input id="expNo" placeholder="e.g. 3">
-    </div>
+      /* Phone: desktop layout at a fixed 1000px width, content sits at the top */
+      html.phone,
+      html.phone body {
+        height: auto;
+      }
+      html.phone body {
+        display: block;
+        width: 1000px;
+        zoom: var(--phone-zoom, 1);
+      }
+      html.phone main {
+        grid-template-columns: 1.15fr 1fr;
+        align-items: stretch;
+      }
+      html.phone form.panel {
+        align-content: space-between;
+        overflow: visible;
+      }
+      html.phone label {
+        font-size: 12px;
+        margin: 6px 0 3px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      html.phone .section-title {
+        font-size: 11px;
+        margin-top: 10px;
+      }
+      html.phone .section-title:first-child {
+        margin-top: 0;
+      }
+      html.phone input,
+      html.phone select,
+      html.phone .btn-small,
+      html.phone .check-pill {
+        height: 34px;
+        font-size: 14px;
+      }
+      html.phone .btn-small {
+        font-size: 12px;
+      }
+      html.phone .btn {
+        height: 40px;
+        font-size: 15px;
+      }
+      html.phone .actions {
+        margin-top: 14px;
+      }
+      html.phone .page-wrap {
+        flex: none;
+        aspect-ratio: 794 / 1123;
+        height: auto;
+      }
 
-    <div class="section-title">Submitted To</div>
-    <div class="f2">
-      <label for="teacher">Teacher's Name</label>
-      <input id="teacher" placeholder="Teacher's name">
-    </div>
-    <div class="f2">
-      <label for="designation">Designation</label>
-      <input id="designation" list="designations" placeholder="e.g. Lecturer">
-    </div>
-    <div class="f2">
-      <label for="tDept">Teacher's Department</label>
-      <input id="tDept" list="departments" placeholder="e.g. CSE">
-    </div>
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        html,
+        body {
+          height: auto !important;
+          margin: 0 !important;
+          background: #fff !important;
+        }
+        body {
+          display: block !important;
+          zoom: 1 !important;
+          width: auto !important;
+        }
+        header,
+        form.panel,
+        .preview-label {
+          display: none !important;
+        }
+        main,
+        .preview-panel,
+        .page-wrap {
+          display: block !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          border: 0 !important;
+          background: none !important;
+          height: auto !important;
+          max-width: none !important;
+          overflow: visible !important;
+        }
+        .page {
+          position: static !important;
+          transform: none !important;
+          box-shadow: none !important;
+          width: 210mm !important;
+          height: 296mm !important;
+          overflow: hidden !important;
+          page-break-after: avoid;
+          break-after: avoid;
+          break-inside: avoid;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>UITS Assignment / Lab Report Cover Page Generator</h1>
+      <button
+        type="button"
+        class="theme-btn"
+        id="themeBtn"
+        aria-label="Toggle dark mode"
+      ></button>
+    </header>
 
-    <div class="section-title">Submitted By</div>
-    <div class="f4">
-      <label for="name">Name</label>
-      <input id="name" placeholder="Your full name" data-save>
-    </div>
-    <div class="f2">
-      <label for="sid">ID</label>
-      <input id="sid" placeholder="e.g. 2125051001" data-save>
-    </div>
-    <div class="f2">
-      <label for="semester">Semester</label>
-      <input id="semester" list="semesters" placeholder="e.g. 5th" data-save>
-    </div>
-    <div class="f2">
-      <label for="batch">Batch</label>
-      <input id="batch" placeholder="e.g. 51" data-save>
-    </div>
-    <div class="f2">
-      <label for="section">Section</label>
-      <input id="section" placeholder="e.g. 7A1" data-save>
-    </div>
-    <div class="f4">
-      <label for="dept">Department</label>
-      <input id="dept" list="departments" placeholder="e.g. CSE" data-save>
-    </div>
-    <div class="f2 clear-wrap">
-      <button type="button" class="btn btn-outline btn-small" id="clearSaved"
-        title="Your name, ID, semester, batch, section and department are remembered in this browser.">Clear saved info</button>
-    </div>
-
-    <div class="actions">
-      <button type="button" class="btn btn-primary" id="dlDocx">Download Word (.docx)</button>
-      <button type="button" class="btn btn-outline" id="dlPdf" title="Choose “Save as PDF” in the print dialog">Download PDF / Print</button>
-    </div>
-
-    <datalist id="designations">
-      <option value="Lecturer"><option value="Senior Lecturer"><option value="Assistant Professor">
-      <option value="Associate Professor"><option value="Professor">
-    </datalist>
-    <datalist id="departments">
-      <option value="CSE"><option value="EEE"><option value="Civil Engineering"><option value="BBA">
-      <option value="English"><option value="Law"><option value="Pharmacy"><option value="IT"><option value="Social Work">
-    </datalist>
-    <datalist id="semesters">
-      <option value="1st"><option value="2nd"><option value="3rd"><option value="4th"><option value="5th">
-      <option value="6th"><option value="7th"><option value="8th">
-    </datalist>
-  </form>
-
-  <section class="panel preview-panel">
-    <div class="preview-label">Live preview</div>
-    <div class="page-wrap" id="pageWrap">
-      <div class="page" id="page">
-        <img class="logo" id="logo" alt="UITS logo">
-        <div class="heading" id="pHeading"></div>
-        <div class="doc-type" id="pType"></div>
-        <div class="line"><span class="k">Course Title</span><span class="v" id="pCourseTitle">:</span></div>
-        <div class="line"><span class="k">Course Code</span><span class="v" id="pCourseCode">:</span></div>
-        <div class="line" id="pExpLine" style="display:none"><span class="k">Experiment No</span><span class="v" id="pExp">:</span></div>
-
-        <div class="to">
-          <div class="sub">Submitted to:</div>
-          <p class="tname" id="pTeacher"></p>
-          <p id="pDesignation"></p>
-          <p id="pTDept"></p>
-          <p id="pUni"></p>
+    <main>
+      <form class="panel" id="form" autocomplete="on" onsubmit="return false;">
+        <div class="section-title">Document</div>
+        <div class="f2">
+          <label for="docTypeSelect">Document Type</label>
+          <select id="docTypeSelect">
+            <option value="Assignment">Assignment</option>
+            <option value="Lab Report">Lab Report</option>
+            <option value="Other">Other (Type custom)</option>
+          </select>
+        </div>
+        <div class="f2">
+          <label for="docNo">No. (optional)</label>
+          <input id="docNo" placeholder="e.g. 1" />
+        </div>
+        <div class="f2">
+          <label for="date">Date of Submission</label>
+          <input id="date" type="date" />
+        </div>
+        <div class="f6" id="customDocWrap" style="display: none">
+          <label for="customDocType">Custom Document Type</label>
+          <input
+            id="customDocType"
+            placeholder="e.g. Project Proposal, Project Report, Term Paper"
+          />
+        </div>
+        <div class="f6">
+          <label for="topic">Topic / Title (optional)</label>
+          <input
+            id="topic"
+            placeholder="e.g. Adder and Subtractor (prints “on [Topic]”)"
+          />
         </div>
 
-        <div class="by">
-          <div class="sub">Submitted by:</div>
-          <div class="line"><span class="k">Name</span><span class="v" id="pName">:</span></div>
-          <div class="line"><span class="k">ID</span><span class="v" id="pSid">:</span></div>
-          <div class="line"><span class="k">Semester</span><span class="v" id="pSemester">:</span></div>
-          <div class="line"><span class="k">Batch</span><span class="v" id="pBatch">:</span></div>
-          <div class="line"><span class="k">Section</span><span class="v" id="pSection">:</span></div>
-          <div class="line"><span class="k">Department</span><span class="v" id="pDept">:</span></div>
-          <div class="line"><span class="k">Date of Submission</span><span class="v" id="pDate">:</span></div>
+        <div class="section-title">Course</div>
+        <div class="f2">
+          <label for="courseTitle">Course Title</label>
+          <input id="courseTitle" placeholder="e.g. Data Structures" />
         </div>
-      </div>
-    </div>
-  </section>
-</main>
+        <div class="f2">
+          <label for="courseCode">Course Code</label>
+          <input id="courseCode" placeholder="e.g. CSE 221" />
+        </div>
+        <div class="f2">
+          <label for="expNo">Experiment No. (optional)</label>
+          <input id="expNo" placeholder="e.g. 3" />
+        </div>
 
-<script>
-(function () {
-  const $ = (id) => document.getElementById(id);
-  const UNI = "University of Information Technology & Sciences";
-  const STORE_KEY = "uits-cover-personal";
-  const ids = ["docType","docNo","topic","courseTitle","courseCode","expNo","teacher","designation","tDept",
-               "name","sid","semester","batch","section","dept","date"];
+        <div class="section-title">Submitted To</div>
+        <div class="f6">
+          <label>Teachers / Instructors</label>
+          <input type="hidden" id="teacherMode" data-save value="1" />
+          <div
+            class="check-pill-group"
+            role="radiogroup"
+            aria-label="Number of Teachers"
+          >
+            <label class="check-pill active" title="1 Teacher / Instructor">
+              <input type="radio" name="teacherCount" value="1" checked />
+              <span class="square-cb"></span>
+              <span>1</span>
+            </label>
+            <label class="check-pill" title="2 Teachers / Instructors">
+              <input type="radio" name="teacherCount" value="2" />
+              <span class="square-cb"></span>
+              <span>2</span>
+            </label>
+          </div>
+        </div>
 
-  $("logo").src = window.UITS_LOGO;
+        <!-- Teacher 1 -->
+        <div id="t1Header" class="team-m-hdr" style="display: none">
+          Teacher 1
+        </div>
+        <div class="f2">
+          <label for="teacher">Teacher's Name</label>
+          <input id="teacher" placeholder="Teacher's name" data-save />
+        </div>
+        <div class="f2">
+          <label for="designation">Designation</label>
+          <input
+            id="designation"
+            list="designations"
+            placeholder="e.g. Lecturer"
+            data-save
+          />
+        </div>
+        <div class="f2">
+          <label for="tDept">Department</label>
+          <input
+            id="tDept"
+            list="departments"
+            placeholder="e.g. CSE"
+            data-save
+          />
+        </div>
 
-  // ---------- dark mode ----------
-  const root = document.documentElement;
-  const sysDark = window.matchMedia("(prefers-color-scheme: dark)");
-  const isDark = () => (root.dataset.theme || (sysDark.matches ? "dark" : "light")) === "dark";
-  function themeLabel() { $("themeBtn").innerHTML = isDark() ? "&#9728;&#65039; Light mode" : "&#127769; Dark mode"; }
-  $("themeBtn").onclick = () => {
-    const next = isDark() ? "light" : "dark";
-    root.dataset.theme = next;
-    try { localStorage.setItem("uits-theme", next); } catch (e) {}
-    themeLabel();
-  };
-  sysDark.addEventListener("change", themeLabel);
-  themeLabel();
+        <!-- Teacher 2 -->
+        <div id="t2Wrap" style="display: none">
+          <div class="team-m-hdr">Teacher 2</div>
+          <div class="f2">
+            <label for="teacher2">Teacher 2's Name</label>
+            <input id="teacher2" placeholder="Teacher 2's name" data-save />
+          </div>
+          <div class="f2">
+            <label for="designation2">Designation</label>
+            <input
+              id="designation2"
+              list="designations"
+              placeholder="e.g. Lecturer"
+              data-save
+            />
+          </div>
+          <div class="f2">
+            <label for="tDept2">Department</label>
+            <input
+              id="tDept2"
+              list="departments"
+              placeholder="e.g. CSE"
+              data-save
+            />
+          </div>
+        </div>
 
-  // ---------- saved personal info ----------
-  const saveFields = [...document.querySelectorAll("[data-save]")].map(e => e.id);
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
-    saveFields.forEach(k => { if (saved[k]) $(k).value = saved[k]; });
-  } catch (e) {}
-  function persist() {
-    try {
-      const o = {}; saveFields.forEach(k => o[k] = $(k).value);
-      localStorage.setItem(STORE_KEY, JSON.stringify(o));
-    } catch (e) {}
-  }
-  $("clearSaved").onclick = () => {
-    try { localStorage.removeItem(STORE_KEY); } catch (e) {}
-    saveFields.forEach(k => $(k).value = "");
-    render();
-  };
+        <div class="section-title">Submitted By</div>
+        <div class="f4">
+          <label>Students</label>
+          <input type="hidden" id="teamMode" data-save value="1" />
+          <div
+            class="check-pill-group"
+            role="radiogroup"
+            aria-label="Number of Students"
+          >
+            <label class="check-pill active" title="1 Student (Individual)">
+              <input type="radio" name="studentCount" value="1" checked />
+              <span class="square-cb"></span>
+              <span>1</span>
+            </label>
+            <label class="check-pill" title="2 Students (Team of 2)">
+              <input type="radio" name="studentCount" value="2" />
+              <span class="square-cb"></span>
+              <span>2</span>
+            </label>
+            <label class="check-pill" title="3 Students (Team of 3)">
+              <input type="radio" name="studentCount" value="3" />
+              <span class="square-cb"></span>
+              <span>3</span>
+            </label>
+            <label class="check-pill" title="4 Students (Team of 4)">
+              <input type="radio" name="studentCount" value="4" />
+              <span class="square-cb"></span>
+              <span>4</span>
+            </label>
+          </div>
+        </div>
+        <div class="f2 clear-wrap">
+          <button
+            type="button"
+            class="btn btn-outline btn-small"
+            id="clearSaved"
+            title="Your name, ID, and team details are remembered in this browser."
+          >
+            Clear saved info
+          </button>
+        </div>
 
-  // default date = today
-  const t = new Date();
-  $("date").value = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`;
+        <!-- Individual Student Mode -->
+        <div id="singleWrap" style="display: contents">
+          <div class="f4">
+            <label for="name">Name</label>
+            <input id="name" placeholder="Your full name" data-save />
+          </div>
+          <div class="f2">
+            <label for="sid">ID</label>
+            <input id="sid" placeholder="e.g. 0432320005101033" data-save />
+          </div>
+          <div class="f2">
+            <label for="semester">Semester</label>
+            <input
+              id="semester"
+              list="semesters"
+              placeholder="e.g. 6th"
+              data-save
+            />
+          </div>
+          <div class="f2">
+            <label for="section">Section</label>
+            <input id="section" placeholder="e.g. 6A2" data-save />
+          </div>
+          <div class="f2">
+            <label for="batch">Batch</label>
+            <input id="batch" placeholder="e.g. 51" data-save />
+          </div>
+          <div class="f6">
+            <label for="dept">Department</label>
+            <input
+              id="dept"
+              list="departments"
+              placeholder="e.g. CSE"
+              data-save
+            />
+          </div>
+        </div>
 
-  // ---------- data ----------
-  function fmtDate(v) {
-    if (!v) return "";
-    const [y, m, d] = v.split("-").map(Number);
-    const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-    return `${String(d).padStart(2,"0")} ${months[m-1]} ${y}`;
-  }
-  function data() {
-    const v = {}; ids.forEach(k => v[k] = $(k).value.trim());
-    v.heading = v.topic;
-    v.typeLine = v.docType + (v.docNo ? " - " + v.docNo : "");
-    v.dateStr = fmtDate(v.date);
-    v.uni = v.teacher ? UNI : "";
-    v.tDeptLine = v.tDept ? "Department of " + v.tDept.replace(/^Department of\s*/i, "") : "";
-    return v;
-  }
+        <!-- Team Mode (2, 3, or 4 Members) -->
+        <div id="teamWrap" style="display: none">
+          <!-- Member 1 (You) -->
+          <div class="team-m-hdr">Member 1 (You)</div>
+          <div class="f2">
+            <label for="m1_name">Name</label>
+            <input id="m1_name" placeholder="Full name" data-save />
+          </div>
+          <div class="f2">
+            <label for="m1_sid">ID</label>
+            <input id="m1_sid" placeholder="e.g. 0432320005101033" data-save />
+          </div>
+          <div class="f1">
+            <label for="m1_dept">Dept</label>
+            <input
+              id="m1_dept"
+              list="departments"
+              placeholder="CSE"
+              data-save
+            />
+          </div>
+          <div class="f1">
+            <label for="m1_sec">Section</label>
+            <input id="m1_sec" placeholder="6A2" data-save />
+          </div>
 
-  // ---------- preview ----------
-  function render() {
-    const v = data();
-    $("pHeading").textContent = v.heading;
-    $("pType").textContent = v.typeLine;
-    $("pCourseTitle").textContent = ": " + v.courseTitle;
-    $("pCourseCode").textContent = ": " + v.courseCode;
-    $("pExp").textContent = ": " + v.expNo;
-    $("pExpLine").style.display = v.expNo ? "" : "none";
-    $("pTeacher").textContent = v.teacher;
-    $("pDesignation").textContent = v.designation;
-    $("pTDept").textContent = v.tDeptLine;
-    $("pUni").textContent = v.uni;
-    $("pName").textContent = ": " + v.name;
-    $("pSid").textContent = ": " + v.sid;
-    $("pSemester").textContent = ": " + v.semester;
-    $("pBatch").textContent = ": " + v.batch;
-    $("pSection").textContent = ": " + v.section;
-    $("pDept").textContent = ": " + v.dept;
-    $("pDate").textContent = ": " + v.dateStr;
-  }
-  ids.forEach(k => $(k).addEventListener("input", () => { render(); persist(); }));
-  render();
+          <!-- Member 2 -->
+          <div class="team-m-hdr">Member 2</div>
+          <div class="f2">
+            <label for="m2_name">Name</label>
+            <input id="m2_name" placeholder="Full name" data-save />
+          </div>
+          <div class="f2">
+            <label for="m2_sid">ID</label>
+            <input id="m2_sid" placeholder="e.g. 0432320005101047" data-save />
+          </div>
+          <div class="f1">
+            <label for="m2_dept">Dept</label>
+            <input
+              id="m2_dept"
+              list="departments"
+              placeholder="CSE"
+              data-save
+            />
+          </div>
+          <div class="f1">
+            <label for="m2_sec">Section</label>
+            <input id="m2_sec" placeholder="6A2" data-save />
+          </div>
 
-  // scale the A4 page to fit the preview column
-  const wrap = $("pageWrap"), page = $("page");
-  function fit() {
-    const s = Math.min(1, wrap.clientWidth / 794, wrap.clientHeight / 1123);
-    page.style.transform = `translateX(-50%) scale(${s})`;
-    page.style.transformOrigin = "top center";
-  }
-  new ResizeObserver(fit).observe(wrap);
-  window.addEventListener("beforeprint", () => { page.style.transform = "none"; });
-  window.addEventListener("afterprint", fit);
+          <!-- Member 3 -->
+          <div id="m3Wrap" style="display: contents">
+            <div class="team-m-hdr">Member 3</div>
+            <div class="f2">
+              <label for="m3_name">Name</label>
+              <input id="m3_name" placeholder="Full name" data-save />
+            </div>
+            <div class="f2">
+              <label for="m3_sid">ID</label>
+              <input
+                id="m3_sid"
+                placeholder="e.g. 0432320005101036"
+                data-save
+              />
+            </div>
+            <div class="f1">
+              <label for="m3_dept">Dept</label>
+              <input
+                id="m3_dept"
+                list="departments"
+                placeholder="CSE"
+                data-save
+              />
+            </div>
+            <div class="f1">
+              <label for="m3_sec">Section</label>
+              <input id="m3_sec" placeholder="5A2" data-save />
+            </div>
+          </div>
 
-  // ---------- downloads ----------
-  function fileBase() {
-    const v = data();
-    return [v.sid, v.courseCode.replace(/\s+/g, ""), v.typeLine.replace(/[\s.\-]+/g, "_")]
-      .filter(Boolean).join("_") || "UITS_Cover_Page";
-  }
+          <!-- Member 4 -->
+          <div id="m4Wrap" style="display: contents">
+            <div class="team-m-hdr">Member 4</div>
+            <div class="f2">
+              <label for="m4_name">Name</label>
+              <input id="m4_name" placeholder="Full name" data-save />
+            </div>
+            <div class="f2">
+              <label for="m4_sid">ID</label>
+              <input
+                id="m4_sid"
+                placeholder="e.g. 0432320005101018"
+                data-save
+              />
+            </div>
+            <div class="f1">
+              <label for="m4_dept">Dept</label>
+              <input
+                id="m4_dept"
+                list="departments"
+                placeholder="CSE"
+                data-save
+              />
+            </div>
+            <div class="f1">
+              <label for="m4_sec">Section</label>
+              <input id="m4_sec" placeholder="6A1" data-save />
+            </div>
+          </div>
+        </div>
 
-  $("dlPdf").onclick = () => {
-    const old = document.title;
-    document.title = fileBase();
-    window.print();
-    document.title = old;
-  };
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="dlDocx">
+            Download Word (.docx)
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline"
+            id="dlPdf"
+            title="Choose “Save as PDF” in the print dialog"
+          >
+            Download PDF / Print
+          </button>
+        </div>
+        <div style="grid-column: span 6; margin-top: 8px">
+          <button
+            type="button"
+            class="btn btn-outline"
+            id="mergeBtn"
+            style="font-weight: 700"
+          >
+            Merge with scanned pages (next page) &rarr;
+          </button>
+        </div>
 
-  $("dlDocx").onclick = async () => {
-    if (!window.docx) { alert("Word export library failed to load. Check your internet connection."); return; }
-    const D = window.docx;
-    const v = data();
-    const FONT = "Times New Roman";
-    const run = (text, o = {}) => new D.TextRun({ text, font: FONT, size: 32, ...o });
-    const kv = (k, val, tab) => new D.Paragraph({
-      tabStops: [{ type: D.TabStopType.LEFT, position: tab }],
-      spacing: { after: 100 },
-      children: [run(k), run("\t: " + val)],
-    });
+        <datalist id="designations">
+          <option value="Lecturer"></option>
+          <option value="Senior Lecturer"></option>
+          <option value="Assistant Professor"></option>
+          <option value="Associate Professor"></option>
+          <option value="Professor"></option>
+        </datalist>
+        <datalist id="departments">
+          <option value="CSE"></option>
+          <option value="EEE"></option>
+          <option value="Civil Engineering"></option>
+          <option value="BBA"></option>
+          <option value="English"></option>
+          <option value="Law"></option>
+          <option value="Pharmacy"></option>
+          <option value="IT"></option>
+          <option value="Social Work"></option>
+        </datalist>
+        <datalist id="semesters">
+          <option value="1st"></option>
+          <option value="2nd"></option>
+          <option value="3rd"></option>
+          <option value="4th"></option>
+          <option value="5th"></option>
+          <option value="6th"></option>
+          <option value="7th"></option>
+          <option value="8th"></option>
+        </datalist>
+      </form>
 
-    const b64 = window.UITS_LOGO.split(",")[1];
-    const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+      <section class="panel preview-panel">
+        <div class="preview-label">Live preview</div>
+        <div class="page-wrap" id="pageWrap">
+          <div class="page" id="page">
+            <img class="logo" id="logo" alt="UITS logo" />
+            <div class="doc-header-wrap" id="docHeaderWrap">
+              <div class="doc-type solo" id="pType"></div>
+              <div class="topic-on" id="pTopicOn" style="display: none">on</div>
+              <div
+                class="topic-title"
+                id="pTopicTitle"
+                style="display: none"
+              ></div>
+            </div>
+            <div class="line">
+              <span class="k">Course Title</span
+              ><span class="v" id="pCourseTitle">:</span>
+            </div>
+            <div class="line">
+              <span class="k">Course Code</span
+              ><span class="v" id="pCourseCode">:</span>
+            </div>
+            <div class="line" id="pExpLine" style="display: none">
+              <span class="k">Experiment No</span
+              ><span class="v" id="pExp">:</span>
+            </div>
 
-    const children = [
-      new D.Paragraph({
-        alignment: D.AlignmentType.CENTER,
-        children: [new D.ImageRun({ type: "png", data: bytes, transformation: { width: 605, height: 102 } })],
-      }),
-      ...(v.heading ? [new D.Paragraph({ alignment: D.AlignmentType.CENTER, spacing: { before: 330 },
-        children: [run(v.heading, { size: 48 })] })] : []),
-      new D.Paragraph({ alignment: D.AlignmentType.CENTER, spacing: { before: v.heading ? 150 : 330, after: 500 },
-        children: [run(v.typeLine, { size: 48, underline: {} })] }),
-      kv("Course Title", v.courseTitle, 2550),
-      kv("Course Code", v.courseCode, 2550),
-      ...(v.expNo ? [kv("Experiment No", v.expNo, 2550)] : []),
-      new D.Paragraph({ spacing: { before: 660, after: 180 }, children: [run("Submitted to:", { underline: {} })] }),
-    ];
-    [[v.teacher, true], [v.designation], [v.tDeptLine], [v.uni]].forEach(([txt, bold]) => {
-      if (txt) children.push(new D.Paragraph({ spacing: { after: 60 }, children: [run(txt, { bold: !!bold })] }));
-    });
-    // fixed gap so "Submitted by" sits in the lower part of the page like the template
-    const filled = [v.teacher, v.designation, v.tDeptLine, v.uni].filter(Boolean).length;
-    children.push(new D.Paragraph({ spacing: { before: Math.max(400, 3200 - filled * 430), after: 180 },
-      children: [run("Submitted by:", { underline: {} })] }));
-    [["Name", v.name], ["ID", v.sid], ["Semester", v.semester], ["Batch", v.batch],
-     ["Section", v.section], ["Department", v.dept], ["Date of Submission", v.dateStr]]
-      .forEach(([k, val]) => children.push(kv(k, val, 3000)));
+            <div class="to">
+              <div class="sub">Submitted to:</div>
+              <!-- 1 Teacher View -->
+              <div id="singleTeacher">
+                <p class="tname" id="pTeacher"></p>
+                <p id="pDesignation"></p>
+                <p id="pTDept"></p>
+                <p id="pUni"></p>
+              </div>
+              <!-- 2 Teachers View -->
+              <div
+                id="teamTeacher"
+                class="teacher-grid cols-2"
+                style="display: none"
+              >
+                <div class="teacher-col">
+                  <p class="tname" id="pTeacher1"></p>
+                  <p id="pDesignation1"></p>
+                  <p id="pTDept1"></p>
+                  <p id="pUni1"></p>
+                </div>
+                <div class="teacher-col">
+                  <p class="tname" id="pTeacher2"></p>
+                  <p id="pDesignation2"></p>
+                  <p id="pTDept2"></p>
+                  <p id="pUni2"></p>
+                </div>
+              </div>
+            </div>
 
-    const doc = new D.Document({
-      styles: { default: { document: { run: { font: FONT, size: 32 } } } },
-      sections: [{
-        properties: { page: {
-          size: { width: 11906, height: 16838 },
-          margin: { top: 864, bottom: 864, left: 1296, right: 1296 },
-        } },
-        children,
-      }],
-    });
-    const blob = await D.Packer.toBlob(doc);
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = fileBase() + ".docx";
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-  };
-})();
-</script>
-</body>
+            <!-- Individual Submitted by -->
+            <div class="by" id="singleBy">
+              <div class="sub">Submitted by:</div>
+              <div class="line">
+                <span class="k">Name</span><span class="v" id="pName">:</span>
+              </div>
+              <div class="line">
+                <span class="k">ID</span><span class="v" id="pSid">:</span>
+              </div>
+              <div class="line">
+                <span class="k">Semester</span
+                ><span class="v" id="pSemester">:</span>
+              </div>
+              <div class="line">
+                <span class="k">Section</span
+                ><span class="v" id="pSection">:</span>
+              </div>
+              <div class="line">
+                <span class="k">Batch</span><span class="v" id="pBatch">:</span>
+              </div>
+              <div class="line">
+                <span class="k">Department</span
+                ><span class="v" id="pDept">:</span>
+              </div>
+              <div class="line">
+                <span class="k">Date of Submission</span
+                ><span class="v" id="pDate">:</span>
+              </div>
+            </div>
+
+            <!-- Team Submitted by -->
+            <div class="by" id="teamBy" style="display: none">
+              <div class="sub">Submitted by:</div>
+              <div class="team-list" id="pTeamList"></div>
+              <div class="line">
+                <span class="k">Department</span
+                ><span class="v" id="pTeamDept">:</span>
+              </div>
+              <div class="line">
+                <span class="k">Section</span
+                ><span class="v" id="pTeamSec">:</span>
+              </div>
+              <div class="line">
+                <span class="k">Date of Submission</span
+                ><span class="v" id="pTeamDate">:</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        const $ = (id) => document.getElementById(id);
+        const UNI = "University of Information Technology & Sciences";
+        const STORE_KEY = "uits-cover-personal";
+        const ids = [
+          "docTypeSelect",
+          "customDocType",
+          "docNo",
+          "topic",
+          "courseTitle",
+          "courseCode",
+          "expNo",
+          "teacherMode",
+          "teacher",
+          "designation",
+          "tDept",
+          "teacher2",
+          "designation2",
+          "tDept2",
+          "teamMode",
+          "name",
+          "sid",
+          "semester",
+          "batch",
+          "section",
+          "dept",
+          "m1_name",
+          "m1_sid",
+          "m1_dept",
+          "m1_sec",
+          "m2_name",
+          "m2_sid",
+          "m2_dept",
+          "m2_sec",
+          "m3_name",
+          "m3_sid",
+          "m3_dept",
+          "m3_sec",
+          "m4_name",
+          "m4_sid",
+          "m4_dept",
+          "m4_sec",
+          "date",
+        ];
+
+        $("logo").src = window.UITS_LOGO;
+
+        // ---------- dark mode ----------
+        const root = document.documentElement;
+        const sysDark = window.matchMedia("(prefers-color-scheme: dark)");
+        const isDark = () =>
+          (root.dataset.theme || (sysDark.matches ? "dark" : "light")) ===
+          "dark";
+        function themeLabel() {
+          $("themeBtn").innerHTML = isDark()
+            ? "&#9728;&#65039; Light mode"
+            : "&#127769; Dark mode";
+        }
+        $("themeBtn").onclick = () => {
+          const next = isDark() ? "light" : "dark";
+          root.dataset.theme = next;
+          try {
+            localStorage.setItem("uits-theme", next);
+          } catch (e) {}
+          themeLabel();
+        };
+        sysDark.addEventListener("change", themeLabel);
+        themeLabel();
+
+        // ---------- saved personal info ----------
+        const saveFields = [...document.querySelectorAll("[data-save]")].map(
+          (e) => e.id,
+        );
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+          saveFields.forEach((k) => {
+            if (saved[k] && $(k)) $(k).value = saved[k];
+          });
+        } catch (e) {}
+
+        // Sync Member 1 fields with single fields
+        if ($("name").value && !$("m1_name").value)
+          $("m1_name").value = $("name").value;
+        if ($("sid").value && !$("m1_sid").value)
+          $("m1_sid").value = $("sid").value;
+        if ($("dept").value && !$("m1_dept").value)
+          $("m1_dept").value = $("dept").value;
+        if ($("section").value && !$("m1_sec").value)
+          $("m1_sec").value = $("section").value;
+
+        function syncM1FromSingle() {
+          $("m1_name").value = $("name").value;
+          $("m1_sid").value = $("sid").value;
+          $("m1_dept").value = $("dept").value;
+          $("m1_sec").value = $("section").value;
+        }
+        function syncSingleFromM1() {
+          $("name").value = $("m1_name").value;
+          $("sid").value = $("m1_sid").value;
+          $("dept").value = $("m1_dept").value;
+          $("section").value = $("m1_sec").value;
+        }
+        ["name", "sid", "dept", "section"].forEach((k) => {
+          $(k).addEventListener("input", syncM1FromSingle);
+        });
+        $("m1_name").addEventListener("input", syncSingleFromM1);
+        $("m1_sid").addEventListener("input", syncSingleFromM1);
+        $("m1_dept").addEventListener("input", () => {
+          syncSingleFromM1();
+          const d = $("m1_dept").value;
+          ["m2_dept", "m3_dept", "m4_dept"].forEach((id) => {
+            if (!$(id).value) $(id).value = d;
+          });
+        });
+        $("m1_sec").addEventListener("input", () => {
+          syncSingleFromM1();
+          const s = $("m1_sec").value;
+          ["m2_sec", "m3_sec", "m4_sec"].forEach((id) => {
+            if (!$(id).value) $(id).value = s;
+          });
+        });
+        function syncPills(name, val) {
+          document.querySelectorAll(`input[name="${name}"]`).forEach((r) => {
+            const isCur = String(r.value) === String(val);
+            r.checked = isCur;
+            const pill = r.closest(".check-pill");
+            if (pill) pill.classList.toggle("active", isCur);
+          });
+        }
+
+        function setTeacherMode(val) {
+          const v = String(val || "1");
+          if ($("teacherMode")) $("teacherMode").value = v;
+          syncPills("teacherCount", v);
+          render();
+          persist();
+        }
+
+        function setTeamMode(val) {
+          const v = String(val || "1");
+          if ($("teamMode")) $("teamMode").value = v;
+          syncPills("studentCount", v);
+          render();
+          persist();
+        }
+
+        document.querySelectorAll('input[name="teacherCount"]').forEach((r) => {
+          r.addEventListener("change", () => {
+            if (r.checked) setTeacherMode(r.value);
+          });
+        });
+        document.querySelectorAll('input[name="studentCount"]').forEach((r) => {
+          r.addEventListener("change", () => {
+            if (r.checked) setTeamMode(r.value);
+          });
+        });
+
+        // Sync initial pill active state from the loaded/default hidden input values
+        syncPills(
+          "teacherCount",
+          $("teacherMode") ? $("teacherMode").value || "1" : "1",
+        );
+        syncPills(
+          "studentCount",
+          $("teamMode") ? $("teamMode").value || "1" : "1",
+        );
+
+        if ($("docTypeSelect")) {
+          $("docTypeSelect").addEventListener("change", () => {
+            const isOther = $("docTypeSelect").value === "Other";
+            if ($("customDocWrap"))
+              $("customDocWrap").style.display = isOther ? "block" : "none";
+            if (isOther && $("customDocType")) $("customDocType").focus();
+            render();
+            persist();
+          });
+        }
+
+        $("tDept").addEventListener("input", () => {
+          if (!$("tDept2").value) $("tDept2").value = $("tDept").value;
+        });
+
+        function persist() {
+          try {
+            const o = {};
+            saveFields.forEach((k) => {
+              if ($(k)) o[k] = $(k).value;
+            });
+            localStorage.setItem(STORE_KEY, JSON.stringify(o));
+          } catch (e) {}
+        }
+        $("clearSaved").onclick = () => {
+          try {
+            localStorage.removeItem(STORE_KEY);
+          } catch (e) {}
+          saveFields.forEach((k) => {
+            if ($(k)) $(k).value = "";
+          });
+          if ($("docTypeSelect")) $("docTypeSelect").value = "Assignment";
+          if ($("customDocWrap")) $("customDocWrap").style.display = "none";
+          if ($("customDocType")) $("customDocType").value = "";
+          setTeacherMode("1");
+          setTeamMode("1");
+          render();
+        };
+
+        // default date = today
+        const t = new Date();
+        $("date").value =
+          `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
+
+        // ---------- data ----------
+        function fmtDate(v) {
+          if (!v) return "";
+          const [y, m, d] = v.split("-").map(Number);
+          const months = [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+          ];
+          return `${String(d).padStart(2, "0")} ${months[m - 1]} ${y}`;
+        }
+        function data() {
+          const v = {};
+          ids.forEach((k) => {
+            if ($(k)) v[k] = $(k).value.trim();
+          });
+          v.topic = v.topic || "";
+          v.heading = v.topic;
+          const sel = $("docTypeSelect")
+            ? $("docTypeSelect").value
+            : "Assignment";
+          const baseType =
+            sel === "Other"
+              ? ($("customDocType") && $("customDocType").value.trim()) ||
+                "Document"
+              : sel;
+          v.docType = baseType;
+          v.typeLine =
+            baseType +
+            (v.docNo
+              ? /^[-–—:]/.test(v.docNo)
+                ? " " + v.docNo
+                : " " + v.docNo
+              : "");
+          v.dateStr = fmtDate(v.date);
+          v.teacherMode = Number($("teacherMode") ? $("teacherMode").value : 1);
+          v.uni = v.teacher ? UNI : "";
+          v.tDeptLine = v.tDept
+            ? "Department of " + v.tDept.replace(/^Department of\s*/i, "")
+            : "";
+          v.uni2 = v.teacher2 ? UNI : "";
+          v.tDeptLine2 = v.tDept2
+            ? "Department of " + v.tDept2.replace(/^Department of\s*/i, "")
+            : "";
+          v.teamMode = Number($("teamMode").value || 1);
+          return v;
+        }
+
+        function escapeText(str) {
+          if (!str) return "";
+          return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+        }
+
+        // ---------- preview ----------
+        // "1) Name (ID)" — the ID part is left out while it is empty
+        function memberLine(m, i) {
+          const name = (m.name || "").trim();
+          const sid = (m.sid || "").trim();
+          return `${i + 1}) ${name}${sid ? ` (${sid})` : ""}`;
+        }
+
+        function render() {
+          const v = data();
+          const isOther =
+            $("docTypeSelect") && $("docTypeSelect").value === "Other";
+          if ($("customDocWrap"))
+            $("customDocWrap").style.display = isOther ? "block" : "none";
+          if (v.topic) {
+            $("pType").className = "doc-type with-topic";
+            $("pType").textContent = v.typeLine;
+            $("pTopicOn").style.display = "block";
+            $("pTopicTitle").style.display = "block";
+            $("pTopicTitle").textContent = v.topic;
+          } else {
+            $("pType").className = "doc-type solo";
+            $("pType").textContent = v.typeLine;
+            $("pTopicOn").style.display = "none";
+            $("pTopicTitle").style.display = "none";
+            $("pTopicTitle").textContent = "";
+          }
+          $("pCourseTitle").textContent = ": " + v.courseTitle;
+          $("pCourseCode").textContent = ": " + v.courseCode;
+          $("pExp").textContent = ": " + v.expNo;
+          $("pExpLine").style.display = v.expNo ? "" : "none";
+
+          const tMode = v.teacherMode;
+          if (tMode === 1) {
+            $("t1Header").style.display = "none";
+            $("t2Wrap").style.display = "none";
+            $("singleTeacher").style.display = "";
+            $("teamTeacher").style.display = "none";
+            $("pTeacher").textContent = v.teacher;
+            $("pDesignation").textContent = v.designation;
+            $("pTDept").textContent = v.tDeptLine;
+            $("pUni").textContent = v.uni;
+          } else {
+            $("t1Header").style.display = "block";
+            $("t2Wrap").style.display = "contents";
+            $("singleTeacher").style.display = "none";
+            $("teamTeacher").style.display = "grid";
+            $("pTeacher1").textContent = v.teacher;
+            $("pDesignation1").textContent = v.designation;
+            $("pTDept1").textContent = v.tDeptLine;
+            $("pUni1").textContent = v.uni;
+            $("pTeacher2").textContent = v.teacher2;
+            $("pDesignation2").textContent = v.designation2;
+            $("pTDept2").textContent = v.tDeptLine2;
+            $("pUni2").textContent = v.uni2;
+          }
+
+          const mode = v.teamMode;
+
+          if (mode === 1) {
+            $("singleWrap").style.display = "contents";
+            $("teamWrap").style.display = "none";
+            $("singleBy").style.display = "";
+            $("teamBy").style.display = "none";
+
+            $("pName").textContent = ": " + v.name;
+            $("pSid").textContent = ": " + v.sid;
+            $("pSemester").textContent = ": " + v.semester;
+            $("pBatch").textContent = ": " + v.batch;
+            $("pSection").textContent = ": " + v.section;
+            $("pDept").textContent = ": " + v.dept;
+            $("pDate").textContent = ": " + v.dateStr;
+          } else {
+            $("singleWrap").style.display = "none";
+            $("teamWrap").style.display = "contents";
+            $("m3Wrap").style.display = mode >= 3 ? "contents" : "none";
+            $("m4Wrap").style.display = mode >= 4 ? "contents" : "none";
+
+            $("singleBy").style.display = "none";
+            $("teamBy").style.display = "";
+
+            const list = $("pTeamList");
+            list.innerHTML = "";
+
+            const teamMembers = [
+              {
+                name: v.m1_name || v.name,
+                sid: v.m1_sid || v.sid,
+                dept: v.m1_dept || v.dept,
+                section: v.m1_sec || v.section,
+              },
+              {
+                name: v.m2_name,
+                sid: v.m2_sid,
+                dept: v.m2_dept || v.m1_dept || v.dept,
+                section: v.m2_sec || v.m1_sec || v.section,
+              },
+              {
+                name: v.m3_name,
+                sid: v.m3_sid,
+                dept: v.m3_dept || v.m1_dept || v.dept,
+                section: v.m3_sec || v.m1_sec || v.section,
+              },
+              {
+                name: v.m4_name,
+                sid: v.m4_sid,
+                dept: v.m4_dept || v.m1_dept || v.dept,
+                section: v.m4_sec || v.m1_sec || v.section,
+              },
+            ].slice(0, mode);
+
+            teamMembers.forEach((m, i) => {
+              const item = document.createElement("div");
+              item.className = "team-item";
+              item.textContent = memberLine(m, i);
+              list.appendChild(item);
+            });
+
+            $("pTeamDept").textContent = ": " + (teamMembers[0].dept || "");
+            $("pTeamSec").textContent = ": " + (teamMembers[0].section || "");
+            $("pTeamDate").textContent = ": " + v.dateStr;
+          }
+        }
+        ids.forEach((k) => {
+          if ($(k))
+            $(k).addEventListener("input", () => {
+              render();
+              persist();
+            });
+        });
+        render();
+
+        // scale the A4 page to fit the preview column
+        const wrap = $("pageWrap"),
+          page = $("page");
+        function fit() {
+          const s = Math.min(
+            1,
+            wrap.clientWidth / 794,
+            wrap.clientHeight / 1123,
+          );
+          page.style.transform = `translateX(-50%) scale(${s})`;
+          page.style.transformOrigin = "top center";
+        }
+        new ResizeObserver(fit).observe(wrap);
+        window.addEventListener("beforeprint", () => {
+          page.style.transform = "none";
+        });
+        window.addEventListener("afterprint", fit);
+
+        // ---------- downloads ----------
+        function fileBase() {
+          const v = data();
+          const id = v.teamMode > 1 ? v.m1_sid || v.sid || "Team" : v.sid;
+          return (
+            [
+              id,
+              v.courseCode.replace(/\s+/g, ""),
+              v.typeLine.replace(/[\s.\-]+/g, "_"),
+            ]
+              .filter(Boolean)
+              .join("_") || "UITS_Cover_Page"
+          );
+        }
+
+        $("dlPdf").onclick = () => {
+          const old = document.title;
+          document.title = fileBase();
+          window.print();
+          document.title = old;
+        };
+
+        $("mergeBtn").onclick = () => {
+          const v = data();
+          const isIndividual = v.teamMode === 1;
+          const hasMember = isIndividual
+            ? v.name && v.sid
+            : v.m1_name || v.name;
+          const hasTeacher =
+            v.teacherMode === 2 ? v.teacher || v.teacher2 : v.teacher;
+          const complete = Boolean(
+            v.courseCode && v.courseTitle && hasMember && hasTeacher,
+          );
+          try {
+            localStorage.setItem(
+              "uitsCover",
+              JSON.stringify({
+                v,
+                complete,
+                docLabel:
+                  v.typeLine || v.docType + (v.docNo ? " - " + v.docNo : ""),
+                logo: window.UITS_LOGO,
+                ts: Date.now(),
+              }),
+            );
+          } catch (e) {
+            console.error("Storage error:", e);
+          }
+          location.href = "merge.html" + (complete ? "?cover=1" : "");
+        };
+
+        $("dlDocx").onclick = async () => {
+          if (!window.docx) {
+            alert(
+              "Word export library failed to load. Check your internet connection.",
+            );
+            return;
+          }
+          const D = window.docx;
+          const v = data();
+          const FONT = "Times New Roman";
+          const run = (text, o = {}) =>
+            new D.TextRun({ text, font: FONT, size: 32, ...o });
+          const kv = (k, val, tab) =>
+            new D.Paragraph({
+              tabStops: [{ type: D.TabStopType.LEFT, position: tab }],
+              spacing: { after: 100 },
+              children: [run(k), run("\t: " + val)],
+            });
+
+          const b64 = window.UITS_LOGO.split(",")[1];
+          const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+
+          const headerParas = v.topic
+            ? [
+                new D.Paragraph({
+                  alignment: D.AlignmentType.CENTER,
+                  spacing: { before: 260, after: 100 },
+                  children: [run(v.typeLine, { size: 44, bold: true })],
+                }),
+                new D.Paragraph({
+                  alignment: D.AlignmentType.CENTER,
+                  spacing: { after: 100 },
+                  children: [run("on", { size: 32 })],
+                }),
+                new D.Paragraph({
+                  alignment: D.AlignmentType.CENTER,
+                  spacing: { after: 440 },
+                  children: [run(v.topic, { size: 40 })],
+                }),
+              ]
+            : [
+                new D.Paragraph({
+                  alignment: D.AlignmentType.CENTER,
+                  spacing: { before: 330, after: 500 },
+                  children: [run(v.typeLine, { size: 48, underline: {} })],
+                }),
+              ];
+
+          const children = [
+            new D.Paragraph({
+              alignment: D.AlignmentType.CENTER,
+              children: [
+                new D.ImageRun({
+                  type: "png",
+                  data: bytes,
+                  transformation: { width: 605, height: 102 },
+                }),
+              ],
+            }),
+            ...headerParas,
+            kv("Course Title", v.courseTitle, 2550),
+            kv("Course Code", v.courseCode, 2550),
+            ...(v.expNo ? [kv("Experiment No", v.expNo, 2550)] : []),
+            new D.Paragraph({
+              spacing: { before: 660, after: 180 },
+              children: [run("Submitted to:", { underline: {} })],
+            }),
+          ];
+          if (v.teacherMode === 2) {
+            const noBorder = {
+              style: D.BorderStyle.NONE,
+              size: 0,
+              color: "auto",
+            };
+            const borders = {
+              top: noBorder,
+              bottom: noBorder,
+              left: noBorder,
+              right: noBorder,
+              insideHorizontal: noBorder,
+              insideVertical: noBorder,
+            };
+            const t1Lines = [
+              new D.Paragraph({
+                spacing: { after: 60 },
+                children: [run(v.teacher || "", { bold: true })],
+              }),
+              ...(v.designation
+                ? [
+                    new D.Paragraph({
+                      spacing: { after: 60 },
+                      children: [run(v.designation)],
+                    }),
+                  ]
+                : []),
+              ...(v.tDeptLine
+                ? [
+                    new D.Paragraph({
+                      spacing: { after: 60 },
+                      children: [run(v.tDeptLine)],
+                    }),
+                  ]
+                : []),
+              ...(v.uni
+                ? [
+                    new D.Paragraph({
+                      spacing: { after: 60 },
+                      children: [run(v.uni)],
+                    }),
+                  ]
+                : []),
+            ];
+            const t2Lines = [
+              new D.Paragraph({
+                spacing: { after: 60 },
+                children: [run(v.teacher2 || "", { bold: true })],
+              }),
+              ...(v.designation2
+                ? [
+                    new D.Paragraph({
+                      spacing: { after: 60 },
+                      children: [run(v.designation2)],
+                    }),
+                  ]
+                : []),
+              ...(v.tDeptLine2
+                ? [
+                    new D.Paragraph({
+                      spacing: { after: 60 },
+                      children: [run(v.tDeptLine2)],
+                    }),
+                  ]
+                : []),
+              ...(v.uni2
+                ? [
+                    new D.Paragraph({
+                      spacing: { after: 60 },
+                      children: [run(v.uni2)],
+                    }),
+                  ]
+                : []),
+            ];
+            children.push(
+              new D.Table({
+                width: { size: 9314, type: D.WidthType.DXA },
+                borders,
+                rows: [
+                  new D.TableRow({
+                    children: [
+                      new D.TableCell({
+                        borders,
+                        width: { size: 4657, type: D.WidthType.DXA },
+                        children: t1Lines,
+                      }),
+                      new D.TableCell({
+                        borders,
+                        width: { size: 4657, type: D.WidthType.DXA },
+                        children: t2Lines,
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            );
+          } else {
+            [
+              [v.teacher, true],
+              [v.designation],
+              [v.tDeptLine],
+              [v.uni],
+            ].forEach(([txt, bold]) => {
+              if (txt)
+                children.push(
+                  new D.Paragraph({
+                    spacing: { after: 60 },
+                    children: [run(txt, { bold: !!bold })],
+                  }),
+                );
+            });
+          }
+          // fixed gap so "Submitted by" sits in the lower part of the page like the template
+          const filled =
+            v.teacherMode === 2
+              ? Math.max(
+                  [v.teacher, v.designation, v.tDeptLine, v.uni].filter(Boolean)
+                    .length,
+                  [v.teacher2, v.designation2, v.tDeptLine2, v.uni2].filter(
+                    Boolean,
+                  ).length,
+                )
+              : [v.teacher, v.designation, v.tDeptLine, v.uni].filter(Boolean)
+                  .length;
+          const mode = v.teamMode;
+
+          if (mode === 1) {
+            children.push(
+              new D.Paragraph({
+                spacing: {
+                  before: Math.max(400, 3200 - filled * 430),
+                  after: 180,
+                },
+                children: [run("Submitted by:", { underline: {} })],
+              }),
+            );
+            [
+              ["Name", v.name],
+              ["ID", v.sid],
+              ["Semester", v.semester],
+              ["Section", v.section],
+              ["Batch", v.batch],
+              ["Department", v.dept],
+              ["Date of Submission", v.dateStr],
+            ].forEach(([k, val]) => children.push(kv(k, val, 3000)));
+          } else {
+            children.push(
+              new D.Paragraph({
+                spacing: {
+                  before: Math.max(400, 3200 - filled * 430),
+                  after: 180,
+                },
+                children: [run("Submitted by:", { underline: {} })],
+              }),
+            );
+
+            const count = mode;
+            const teamMembers = [
+              {
+                name: v.m1_name || v.name,
+                sid: v.m1_sid || v.sid,
+                dept: v.m1_dept || v.dept,
+                section: v.m1_sec || v.section,
+              },
+              {
+                name: v.m2_name,
+                sid: v.m2_sid,
+                dept: v.m2_dept || v.m1_dept || v.dept,
+                section: v.m2_sec || v.m1_sec || v.section,
+              },
+              {
+                name: v.m3_name,
+                sid: v.m3_sid,
+                dept: v.m3_dept || v.m1_dept || v.dept,
+                section: v.m3_sec || v.m1_sec || v.section,
+              },
+              {
+                name: v.m4_name,
+                sid: v.m4_sid,
+                dept: v.m4_dept || v.m1_dept || v.dept,
+                section: v.m4_sec || v.m1_sec || v.section,
+              },
+            ].slice(0, count);
+
+            teamMembers.forEach((m, i) =>
+              children.push(
+                new D.Paragraph({
+                  spacing: { after: 100 },
+                  children: [run(memberLine(m, i))],
+                }),
+              ),
+            );
+            children.push(new D.Paragraph({ spacing: { after: 80 }, children: [] }));
+            [
+              ["Department", teamMembers[0].dept || ""],
+              ["Section", teamMembers[0].section || ""],
+              ["Date of Submission", v.dateStr],
+            ].forEach(([k, val]) => children.push(kv(k, val, 3000)));
+          }
+
+          const doc = new D.Document({
+            styles: {
+              default: { document: { run: { font: FONT, size: 32 } } },
+            },
+            sections: [
+              {
+                properties: {
+                  page: {
+                    size: { width: 11906, height: 16838 },
+                    margin: { top: 864, bottom: 864, left: 1296, right: 1296 },
+                  },
+                },
+                children,
+              },
+            ],
+          });
+          const blob = await D.Packer.toBlob(doc);
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = fileBase() + ".docx";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        };
+      })();
+    </script>
+  </body>
 </html>

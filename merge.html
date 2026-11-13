@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scan &amp; Merge PDF — UITS</title>
+<script>
+  try { const t = localStorage.getItem("uits-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+<script src="logo.js"></script>
+<style>
+:root {
+  --maroon: #8a1c22;
+  --maroon-dark: #6d1419;
+  --bg: #ffffff;
+  --panel: #f6ecec;
+  --border: #e3c9cb;
+  --text: #222222;
+  --muted: #6b5b5c;
+  --accent: #8a1c22;
+  --field: #ffffff;
+  --hover: #fbf3f3;
+  --drop-bg: #f9f1f1;
+  --drop-border: #8a1c22;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17181b;
+    --panel: #232428;
+    --border: #3a3b41;
+    --text: #e8e6e6;
+    --muted: #a5a0a1;
+    --accent: #e9858b;
+    --field: #1b1c20;
+    --hover: #2d2023;
+    --drop-bg: #222327;
+    --drop-border: #e9858b;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #17181b;
+  --panel: #232428;
+  --border: #3a3b41;
+  --text: #e8e6e6;
+  --muted: #a5a0a1;
+  --accent: #e9858b;
+  --field: #1b1c20;
+  --hover: #2d2023;
+  --drop-bg: #222327;
+  --drop-border: #e9858b;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  transition: background .2s, color .2s;
+}
+.wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.back {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 14px;
+}
+.back:hover { text-decoration: underline; }
+.theme-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
+  border-radius: 999px; border: 1px solid var(--border); background: var(--panel); color: var(--text);
+}
+.theme-btn:hover { border-color: var(--accent); }
+
+h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  color: var(--accent);
+  text-align: center;
+}
+.hint {
+  color: var(--muted);
+  font-size: .92rem;
+  text-align: center;
+  margin: 0 auto;
+  max-width: 820px;
+  line-height: 1.45;
+}
+#drop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(600px, 100%);
+  min-height: 170px;
+  margin: 2vh auto 0;
+  padding: 24px;
+  text-align: center;
+  border: 2px dashed var(--drop-border);
+  border-radius: 12px;
+  background: var(--drop-bg);
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text);
+  transition: border-color .2s, background .2s;
+}
+#drop.o {
+  background: var(--hover);
+  border-color: var(--accent);
+  border-style: solid;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+input[type=text], #fn, select {
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  background: var(--field);
+  color: var(--text);
+  font-family: inherit;
+}
+#fn { flex: 1 1 260px; min-width: 0; }
+label.chk {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: .95rem;
+  cursor: pointer;
+}
+button {
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--maroon);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .15s, opacity .15s;
+}
+button:hover { background: var(--maroon-dark); }
+button.alt, .r button {
+  background: var(--field);
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+}
+button.alt:hover, .r button:hover { background: var(--hover); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+#coverInfo { color: var(--muted); font-size: .88rem; }
+#coverInfo a { color: var(--accent); font-weight: 600; }
+#st {
+  flex-basis: 100%;
+  text-align: center;
+  font-size: .9rem;
+  color: var(--muted);
+  min-height: 1.2em;
+}
+#grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+}
+.c {
+  background: var(--field);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px;
+}
+.c canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid var(--border);
+  aspect-ratio: 210 / 297;
+}
+.r {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  margin-top: 6px;
+}
+.r span { flex: 1; font-size: .82rem; color: var(--muted); font-weight: 600; }
+.r button, .r select { padding: 4px 7px; font-size: .8rem; border-width: 1px; }
+
+#cm {
+  position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 50;
+  display: flex; align-items: center; justify-content: center; padding: 10px;
+}
+#cm[hidden] { display: none; }
+.cmb {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  max-width: 96vw;
+  max-height: 96vh;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+.cmh { font-weight: 600; color: var(--accent); text-align: center; font-size: 15px; }
+#cmc { touch-action: none; cursor: crosshair; }
+
+#pvbox {
+  margin-top: 8px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+#pvbox h2 { font-size: 1.2rem; margin: 0 0 12px; color: var(--accent); }
+.pvnav { display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap; }
+#pvc {
+  display: none;
+  max-width: min(100%, 620px);
+  height: auto;
+  margin: 14px auto 0;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 12px rgba(0,0,0,.15);
+  background: #fff;
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-nav">
+    <a class="back" href="index.html">&larr; Back to cover page generator</a>
+    <button type="button" class="theme-btn" id="themeBtn" aria-label="Toggle dark mode"></button>
+  </div>
+
+  <h1>Scan &amp; Merge into One PDF</h1>
+  <p class="hint">Add photos, PDFs or Word files in order. Pages are auto-cropped to A4, colour-enhanced and merged. Nothing leaves your device. If the auto-crop is off, click <b>Crop</b> on a page and drag the four corners.</p>
+
+  <label id="drop" for="f">Tap or drop files here (JPG, PNG, PDF, DOCX)</label>
+  <input id="f" type="file" multiple accept="image/*,.pdf,.docx" style="position:absolute;left:-9999px">
+
+  <div class="card">
+    <div class="bar">
+      <label class="chk"><input type="checkbox" id="useCover"> &#10004; Add my cover page first</label>
+      <span id="coverInfo"></span>
+    </div>
+    <div class="bar">
+      <input id="fn" placeholder="PDF file name (e.g. A1_Sec6A2_Nasim_0432320005101033)">
+      <select id="gf">
+        <option value="magic">Magic colour</option>
+        <option value="gray">Grayscale</option>
+        <option value="bw">Black &amp; white</option>
+        <option value="original">Original</option>
+      </select>
+      <label class="chk"><input type="checkbox" id="ac" checked> Auto-crop</label>
+      <button id="dl" disabled>Create merged PDF</button>
+      <button id="clr" class="alt">Clear</button>
+      <span id="st"></span>
+    </div>
+  </div>
+
+  <div id="grid"></div>
+
+  <!-- Manual 4-corner crop modal -->
+  <div id="cm" hidden>
+    <div class="cmb">
+      <div class="cmh">Drag the 4 corners onto the corners of the paper</div>
+      <canvas id="cmc"></canvas>
+      <div class="bar">
+        <button id="cmAuto" class="alt">Auto-detect</button>
+        <button id="cmRot" class="alt">Rotate &#10227;</button>
+        <button id="cmCancel" class="alt">Cancel</button>
+        <button id="cmOk">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <section id="pvbox">
+    <h2>Preview</h2>
+    <div class="pvnav">
+      <button id="pp" class="alt" disabled>&#9664; Prev</button>
+      <span id="pn">No pages yet</span>
+      <button id="pnx" class="alt" disabled>Next &#9654;</button>
+    </div>
+    <canvas id="pvc"></canvas>
+  </section>
+</div>
+
+<script>
+const W = 1240, H = 1754, $ = id => document.getElementById(id);
+let pages = [], busy = false;
+
+// Dark mode toggle
+const root = document.documentElement;
+const sysDark = window.matchMedia("(prefers-color-scheme: dark)");
+const isDark = () => (root.dataset.theme || (sysDark.matches ? "dark" : "light")) === "dark";
+function themeLabel() { $("themeBtn").innerHTML = isDark() ? "&#9728;&#65039; Light mode" : "&#127769; Dark mode"; }
+$("themeBtn").onclick = () => {
+  const next = isDark() ? "light" : "dark";
+  root.dataset.theme = next;
+  try { localStorage.setItem("uits-theme", next); } catch (e) {}
+  themeLabel();
+};
+sysDark.addEventListener("change", themeLabel);
+themeLabel();
+
+try {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+} catch (e) {
+  console.error('pdf.js worker initialization error:', e);
+}
+window.onerror = (m) => { $('st').textContent = 'Error: ' + m; };
+
+const mk = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
+
+function otsu(g) {
+  const h = new Array(256).fill(0);
+  for (const v of g) h[v]++;
+  let t = g.length, s = 0;
+  for (let i = 0; i < 256; i++) s += i * h[i];
+  let sb = 0, wb = 0, m = 0, th = 128;
+  for (let i = 0; i < 256; i++) {
+    wb += h[i];
+    if (!wb) continue;
+    const wf = t - wb;
+    if (!wf) break;
+    sb += i * h[i];
+    const d = sb / wb - (s - sb) / wf, v = wb * wf * d * d;
+    if (v > m) { m = v; th = i; }
+  }
+  return th;
+}
+
+let notes = [];
+function morph(m, w, h, r, er) {
+  const t = new Uint8Array(w * h), o = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let a = er ? 1 : 0;
+      for (let k = -r; k <= r; k++) {
+        const xx = x + k, v = xx < 0 || xx >= w ? 0 : m[y * w + xx];
+        a = er ? a & v : a | v;
+      }
+      t[y * w + x] = a;
+    }
+  }
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let a = er ? 1 : 0;
+      for (let k = -r; k <= r; k++) {
+        const yy = y + k, v = yy < 0 || yy >= h ? 0 : t[yy * w + x];
+        a = er ? a & v : a | v;
+      }
+      o[y * w + x] = a;
+    }
+  }
+  return o;
+}
+
+function biggest(m, w, h) {
+  const lab = new Int32Array(w * h), st = new Int32Array(w * h);
+  let best = null, bn = 0, id = 0;
+  for (let s = 0; s < w * h; s++) {
+    if (!m[s] || lab[s]) continue;
+    id++;
+    let sp = 0;
+    const pts = [];
+    st[sp++] = s;
+    lab[s] = id;
+    while (sp) {
+      const p = st[--sp];
+      pts.push(p);
+      const x = p % w, y = (p / w) | 0;
+      if (x > 0 && m[p - 1] && !lab[p - 1]) { lab[p - 1] = id; st[sp++] = p - 1; }
+      if (x < w - 1 && m[p + 1] && !lab[p + 1]) { lab[p + 1] = id; st[sp++] = p + 1; }
+      if (y > 0 && m[p - w] && !lab[p - w]) { lab[p - w] = id; st[sp++] = p - w; }
+      if (y < h - 1 && m[p + w] && !lab[p + w]) { lab[p + w] = id; st[sp++] = p + w; }
+    }
+    if (pts.length > bn) { bn = pts.length; best = pts; }
+  }
+  return best;
+}
+
+function solveH(d, s) {
+  const A = [], b = [];
+  for (let i = 0; i < 4; i++) {
+    const [x, y] = d[i], [u, v] = s[i];
+    A.push([x, y, 1, 0, 0, 0, -u * x, -u * y]);
+    b.push(u);
+    A.push([0, 0, 0, x, y, 1, -v * x, -v * y]);
+    b.push(v);
+  }
+  for (let i = 0; i < 8; i++) {
+    let m = i;
+    for (let r = i + 1; r < 8; r++) if (Math.abs(A[r][i]) > Math.abs(A[m][i])) m = r;
+    [A[i], A[m]] = [A[m], A[i]];
+    [b[i], b[m]] = [b[m], b[i]];
+    for (let r = 0; r < 8; r++) {
+      if (r != i) {
+        const f = A[r][i] / A[i][i];
+        for (let c = i; c < 8; c++) A[r][c] -= f * A[i][c];
+        b[r] -= f * b[i];
+      }
+    }
+  }
+  return b.map((v, i) => v / A[i][i]);
+}
+
+function warp(src, q, ow, oh) {
+  const sw = src.width, sh = src.height, sd = src.getContext('2d').getImageData(0, 0, sw, sh).data;
+  const h = solveH([[0, 0], [ow, 0], [ow, oh], [0, oh]], q);
+  const o = mk(ow, oh), ox = o.getContext('2d'), im = ox.createImageData(ow, oh), od = im.data;
+  for (let v = 0; v < oh; v++) {
+    for (let u = 0; u < ow; u++) {
+      const z = h[6] * u + h[7] * v + 1;
+      const x = (h[0] * u + h[1] * v + h[2]) / z;
+      const y = (h[3] * u + h[4] * v + h[5]) / z;
+      const x0 = Math.floor(x), y0 = Math.floor(y), i = (v * ow + u) * 4;
+      od[i + 3] = 255;
+      if (!(x0 >= 0 && y0 >= 0 && x0 < sw - 1 && y0 < sh - 1)) {
+        od[i] = od[i + 1] = od[i + 2] = 255;
+        continue;
+      }
+      const fx = x - x0, fy = y - y0, p = (y0 * sw + x0) * 4, p2 = p + sw * 4;
+      for (let k = 0; k < 3; k++) {
+        od[i + k] = (sd[p + k] * (1 - fx) + sd[p + 4 + k] * fx) * (1 - fy) + (sd[p2 + k] * (1 - fx) + sd[p2 + 4 + k] * fx) * fy;
+      }
+    }
+  }
+  ox.putImageData(im, 0, 0);
+  return o;
+}
+
+function quadFromMask(m, w, h) {
+  const r = Math.max(2, Math.round(Math.max(w, h) / 150));
+  m = morph(morph(m, w, h, r * 3, 0), w, h, r * 3, 1);
+  m = morph(morph(m, w, h, r, 1), w, h, r * 0);
+  const pts = biggest(m, w, h);
+  if (!pts || pts.length < w * h * .05) return null;
+  let tl, tr, br, bl, a = 1e9, b = -1e9, cc = -1e9, e = 1e9;
+  for (const p of pts) {
+    const px = p % w, py = (p / w) | 0, s = px + py, df = px - py;
+    if (s < a) { a = s; tl = [px, py]; }
+    if (s > cc) { cc = s; br = [px, py]; }
+    if (df > b) { b = df; tr = [px, py]; }
+    if (df < e) { e = df; bl = [px, py]; }
+  }
+  const Q = [tl, tr, br, bl];
+  const area = Math.abs(Q.reduce((t, p, i) => { const n = Q[(i + 1) % 4]; return t + p[0] * n[1] - n[0] * p[1]; }, 0)) / 2;
+  const mg = Math.max(w, h) * .04;
+  if (Q.every(p => p[0] < mg || p[0] > w - mg) && Q.every(p => p[1] < mg || p[1] > h - mg)) return null;
+  if (area < w * h * .07 || area > w * h * .97 || pts.length / area < .7) return null;
+  return { Q, sol: pts.length / area };
+}
+
+function detectQuad(src) {
+  const sw = src.width, sh = src.height, sc = Math.min(1, 480 / Math.max(sw, sh));
+  const w = Math.round(sw * sc), h = Math.round(sh * sc), c = mk(w, h), x = c.getContext('2d');
+  x.filter = 'blur(2px)';
+  x.drawImage(src, 0, 0, w, h);
+  x.filter = 'none';
+  const d = x.getImageData(0, 0, w, h).data, g = new Uint8Array(w * h);
+  for (let i = 0; i < g.length; i++) g[i] = .299 * d[i * 4] + .587 * d[i * 4 + 1] + .114 * d[i * 4 + 2];
+  const th = otsu(g), mA = new Uint8Array(w * h);
+  for (let i = 0; i < mA.length; i++) mA[i] = g[i] > th ? 1 : 0;
+
+  const x0 = Math.round(w * .35), x1 = Math.round(w * .65), y0 = Math.round(h * .35), y1 = Math.round(h * .65), LL = [];
+  for (let y = y0; y < y1; y++) for (let u = x0; u < x1; u++) LL.push(g[y * w + u]);
+  LL.sort((p, q) => p - q);
+  const med = LL[LL.length >> 1];
+  let pr = 0, pg = 0, pb = 0, n = 0;
+  for (let y = y0; y < y1; y++) for (let u = x0; u < x1; u++) {
+    const i = y * w + u;
+    if (g[i] >= med) { pr += d[i * 4]; pg += d[i * 4 + 1]; pb += d[i * 4 + 2]; n++; }
+  }
+  pr /= n; pg /= n; pb /= n;
+  const pl = .299 * pr + .587 * pg + .114 * pb, mB = new Uint8Array(w * h);
+  for (let i = 0; i < mB.length; i++) {
+    const dr = d[i * 4] - pr, dg = d[i * 4 + 1] - pg, db = d[i * 4 + 2] - pb;
+    mB[i] = (g[i] >= pl * .6 && Math.sqrt(dr * dr + dg * dg + db * db) < 75) ? 1 : 0;
+  }
+  let best = null;
+  for (const m of [mB, mA]) {
+    const r = quadFromMask(m, w, h);
+    if (r && (!best || r.sol > best.sol + .03)) best = r;
+  }
+  if (!best) return null;
+  const q = best.Q.map(p => [p[0] / sc, p[1] / sc]);
+  const Ln = (p, o) => Math.hypot(p[0] - o[0], p[1] - o[1]);
+  const qw = (Ln(q[0], q[1]) + Ln(q[3], q[2])) / 2;
+  const qh = (Ln(q[0], q[3]) + Ln(q[1], q[2])) / 2;
+  if (Math.min(qw, qh) < Math.max(sw, sh) * .1) return null;
+  return q;
+}
+
+function applyQuad(src, q) {
+  const L = (p, o) => Math.hypot(p[0] - o[0], p[1] - o[1]);
+  const qw = (L(q[0], q[1]) + L(q[3], q[2])) / 2;
+  const qh = (L(q[0], q[3]) + L(q[1], q[2])) / 2;
+  let ow, oh;
+  const ra = Math.min(qw, qh) / Math.max(qw, qh);
+  if (Math.abs(ra - .707) < .15) {
+    if (qw <= qh) { ow = W; oh = H; } else { ow = H; oh = W; }
+  } else {
+    const k = H / Math.max(qw, qh);
+    ow = Math.round(qw * k);
+    oh = Math.round(qh * k);
+  }
+  return warp(src, q, Math.max(ow, 50), Math.max(oh, 50));
+}
+
+function toA4(src) {
+  const c = mk(W, H), x = c.getContext('2d');
+  x.fillStyle = '#fff';
+  x.fillRect(0, 0, W, H);
+  let s = src;
+  if (src.width > src.height * 1.2) {
+    s = mk(src.height, src.width);
+    const t = s.getContext('2d');
+    t.translate(s.width, 0);
+    t.rotate(Math.PI / 2);
+    t.drawImage(src, 0, 0);
+  }
+  const k = Math.min(W / s.width, H / s.height), w = s.width * k, h = s.height * k;
+  x.drawImage(s, (W - w) / 2, (H - h) / 2, w, h);
+  return c;
+}
+
+function enhance(src, mode) {
+  const c = mk(src.width, src.height), x = c.getContext('2d');
+  x.drawImage(src, 0, 0);
+  if (mode === 'original') return c;
+  const im = x.getImageData(0, 0, c.width, c.height), d = im.data;
+  const sw = Math.ceil(c.width / 24), sh = Math.ceil(c.height / 24);
+  const s = mk(sw, sh), sx = s.getContext('2d');
+  sx.drawImage(c, 0, 0, sw, sh);
+  const sd = sx.getImageData(0, 0, sw, sh), o = new Uint8ClampedArray(sd.data);
+
+  for (let y = 0; y < sh; y++) {
+    for (let u = 0; u < sw; u++) {
+      for (let k = 0; k < 3; k++) {
+        let m = 0;
+        for (let a = -2; a <= 2; a++) {
+          for (let b = -2; b <= 2; b++) {
+            const yy = y + a, uu = u + b;
+            if (yy >= 0 && yy < sh && uu >= 0 && uu < sw) m = Math.max(m, sd.data[(yy * sw + uu) * 4 + k]);
+          }
+        }
+        o[(y * sw + u) * 4 + k] = m;
+        o[(y * sw + u) * 4 + 3] = 255;
+      }
+    }
+  }
+  sd.data.set(o);
+  sx.putImageData(sd, 0, 0);
+  const b = mk(c.width, c.height), bx = b.getContext('2d');
+  bx.imageSmoothingQuality = 'high';
+  bx.drawImage(s, 0, 0, c.width, c.height);
+  const bg = bx.getImageData(0, 0, c.width, c.height).data;
+
+  for (let i = 0; i < d.length; i += 4) {
+    const v = [0, 0, 0];
+    for (let k = 0; k < 3; k++) {
+      let t = d[i + k] / Math.max(bg[i + k], 40) * 255;
+      v[k] = Math.max(0, Math.min(255, (t - 45) * 1.3));
+    }
+    if (mode === 'magic') {
+      d[i] = v[0]; d[i + 1] = v[1]; d[i + 2] = v[2];
+    } else {
+      let l = .299 * v[0] + .587 * v[1] + .114 * v[2];
+      if (mode === 'bw') l = l > 150 ? 255 : 0;
+      d[i] = d[i + 1] = d[i + 2] = l;
+    }
+  }
+  x.putImageData(im, 0, 0);
+  return c;
+}
+
+const load = f => new Promise((res, rej) => {
+  const i = new Image();
+  i.onload = () => res(i);
+  i.onerror = rej;
+  i.src = URL.createObjectURL(f);
+});
+
+async function addPage(c) {
+  pages.push({ raw: c, mode: $('gf').value, out: null });
+}
+
+async function handle(file) {
+  const n = file.name.toLowerCase();
+  if (n.endsWith('.pdf')) {
+    if (!window.pdfjsLib) throw new Error('PDF library failed to load');
+    const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+    for (let i = 1; i <= pdf.numPages; i++) {
+      $('st').textContent = `${file.name}: page ${i}/${pdf.numPages}`;
+      const pg = await pdf.getPage(i), v1 = pg.getViewport({ scale: 1 });
+      const vp = pg.getViewport({ scale: W / v1.width }), c = mk(vp.width, vp.height), x = c.getContext('2d');
+      x.fillStyle = '#fff';
+      x.fillRect(0, 0, c.width, c.height);
+      await pg.render({ canvasContext: x, viewport: vp }).promise;
+      await addPage(toA4(c));
+    }
+  } else if (n.endsWith('.docx')) {
+    if (!window.mammoth || !window.html2canvas) throw new Error('DOCX libraries failed to load');
+    $('st').textContent = `${file.name}: rendering`;
+    const r = await mammoth.convertToHtml({ arrayBuffer: await file.arrayBuffer() });
+    const div = document.createElement('div');
+    div.style.cssText = 'position:fixed;left:-10000px;top:0;width:794px;padding:60px;background:#fff;color:#000;font:14px/1.5 Georgia,serif;box-sizing:border-box';
+    div.innerHTML = r.value + '<style>img{max-width:100%}table{border-collapse:collapse}td,th{border:1px solid #999;padding:4px}</style>';
+    document.body.appendChild(div);
+    const full = await html2canvas(div, { scale: W / 794, backgroundColor: '#fff' });
+    div.remove();
+    for (let y = 0; y < full.height; y += H) {
+      const c = mk(W, H), x = c.getContext('2d');
+      x.fillStyle = '#fff';
+      x.fillRect(0, 0, W, H);
+      x.drawImage(full, 0, y, W, H, 0, 0, W, H);
+      await addPage(c);
+    }
+  } else if (file.type.startsWith('image/') || /\.(jpe?g|png|webp|gif|bmp|heic|heif|avif)$/.test(n)) {
+    $('st').textContent = `${file.name}: enhancing`;
+    let bmp;
+    try {
+      bmp = await createImageBitmap(file);
+    } catch (e1) {
+      try {
+        bmp = await load(file);
+      } catch (e2) {
+        if (!window.heic2any) throw new Error('HEIC converter failed to load; use JPG/PNG');
+        $('st').textContent = `${file.name}: converting HEIC…`;
+        try {
+          const b = await heic2any({ blob: file, toType: 'image/jpeg', quality: .92 });
+          bmp = await createImageBitmap(Array.isArray(b) ? b[0] : b);
+        } catch (e3) {
+          throw new Error('could not convert this image; use JPG/PNG');
+        }
+      }
+    }
+    const iw = bmp.naturalWidth || bmp.width, ih = bmp.naturalHeight || bmp.height;
+    const ks = Math.min(1, 2600 / Math.max(iw, ih)), c = mk(Math.round(iw * ks), Math.round(ih * ks));
+    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    const q = $('ac').checked ? detectQuad(c) : null;
+    if ($('ac').checked && !q) notes.push(file.name + ': paper edges not found, click Crop on that page to set the corners');
+    pages.push({ raw: toA4(q ? applyQuad(c, q) : c), mode: $('gf').value, out: null, orig: c, quad: q });
+  } else {
+    throw new Error('unsupported file type');
+  }
+}
+
+async function run(files) {
+  if (busy) { $('st').textContent = 'Still processing, try again in a moment'; return; }
+  busy = true;
+  const errs = [];
+  notes = [];
+  for (const f of files) {
+    try { await handle(f); } catch (e) { console.error(e); errs.push(f.name + ': ' + (e.message || e)); }
+  }
+  busy = false;
+  $('st').textContent = pages.length + ' page(s)' + (notes.length ? ' (' + notes.join('; ') + ')' : '') + (errs.length ? ' — failed: ' + errs.join('; ') : '');
+  try { render(); } catch (e) { console.error(e); $('st').textContent = 'Display error: ' + (e.message || e); }
+}
+
+function render() {
+  const g = $('grid');
+  g.innerHTML = '';
+  pages.forEach((p, i) => {
+    p.out = p.out || enhance(p.raw, p.mode);
+    const d = document.createElement('div');
+    d.className = 'c';
+    d.appendChild(p.out);
+    p.out.style.cursor = 'pointer';
+    p.out.onclick = () => { pi = i; showPv(); $('pvbox').scrollIntoView({ behavior: 'smooth' }); };
+    const r = document.createElement('div');
+    r.className = 'r';
+    r.innerHTML = `<span>${i + 1}</span>`;
+    const sel = document.createElement('select');
+    [['magic', 'Magic'], ['gray', 'Gray'], ['bw', 'B&W'], ['original', 'Orig']].forEach(([v, t]) => {
+      const o = new Option(t, v);
+      o.selected = v === p.mode;
+      sel.add(o);
+    });
+    sel.onchange = () => { p.mode = sel.value; p.out = null; render(); };
+    r.appendChild(sel);
+    const bt = (t, fn, dis) => {
+      const b = document.createElement('button');
+      b.textContent = t;
+      b.disabled = !!dis;
+      b.onclick = fn;
+      r.appendChild(b);
+    };
+    bt('↑', () => { [pages[i - 1], pages[i]] = [pages[i], pages[i - 1]]; render(); }, i == 0);
+    bt('↓', () => { [pages[i + 1], pages[i]] = [pages[i], pages[i + 1]]; render(); }, i == pages.length - 1);
+    bt('✕', () => { pages.splice(i, 1); render(); });
+    if (p.orig) bt('Crop', () => openCrop(p));
+    d.appendChild(r);
+    g.appendChild(d);
+  });
+  $('dl').disabled = !pages.length && !($('useCover').checked && COVER && COVER.complete);
+  showPv();
+}
+
+let pi = 0;
+function showPv() {
+  const v = $('pvc'), n = pages.length;
+  if (!n) {
+    v.style.display = 'none';
+    $('pn').textContent = 'No pages yet';
+    $('pp').disabled = $('pnx').disabled = true;
+    return;
+  }
+  pi = Math.max(0, Math.min(pi, n - 1));
+  const o = pages[pi].out;
+  v.style.display = 'block';
+  v.width = o.width;
+  v.height = o.height;
+  v.getContext('2d').drawImage(o, 0, 0);
+  $('pn').textContent = 'Page ' + (pi + 1) + ' of ' + n;
+  $('pp').disabled = pi == 0;
+  $('pnx').disabled = pi == n - 1;
+}
+$('pp').onclick = () => { pi--; showPv(); };
+$('pnx').onclick = () => { pi++; showPv(); };
+$('gf').onchange = () => { pages.forEach(p => { p.mode = $('gf').value; p.out = null; }); render(); };
+$('f').onchange = e => { const fl = [...e.target.files]; e.target.value = ''; $('st').textContent = 'Reading ' + fl.length + ' file(s)…'; run(fl); };
+$('drop').ondragover = e => { e.preventDefault(); $('drop').classList.add('o'); };
+$('drop').ondragleave = () => $('drop').classList.remove('o');
+$('drop').ondrop = e => { e.preventDefault(); $('drop').classList.remove('o'); run([...e.dataTransfer.files]); };
+$('clr').onclick = () => { pages = []; $('st').textContent = ''; render(); };
+
+/* ---------- manual crop editor ---------- */
+let cp = null, cq = null, cs = 1, drag = -1;
+function sizeCm() {
+  const o = cp.orig, c = $('cmc');
+  cs = Math.min(innerWidth * .88 / o.width, innerHeight * .6 / o.height, 1);
+  c.width = Math.round(o.width * cs);
+  c.height = Math.round(o.height * cs);
+}
+function cmDraw() {
+  const c = $('cmc'), x = c.getContext('2d');
+  x.clearRect(0, 0, c.width, c.height);
+  x.drawImage(cp.orig, 0, 0, c.width, c.height);
+  x.lineWidth = 3;
+  x.strokeStyle = '#8a1c22';
+  x.fillStyle = 'rgba(138, 28, 34, .15)';
+  x.beginPath();
+  cq.forEach((p, i) => i ? x.lineTo(p[0] * cs, p[1] * cs) : x.moveTo(p[0] * cs, p[1] * cs));
+  x.closePath();
+  x.fill();
+  x.stroke();
+  cq.forEach(p => {
+    x.beginPath();
+    x.arc(p[0] * cs, p[1] * cs, 13, 0, 7);
+    x.fillStyle = '#fff';
+    x.fill();
+    x.stroke();
+  });
+}
+function openCrop(p) {
+  cp = p;
+  sizeCm();
+  const o = p.orig, m = .06;
+  cq = (p.quad || detectQuad(o) || [
+    [o.width * m, o.height * m],
+    [o.width * (1 - m), o.height * m],
+    [o.width * (1 - m), o.height * (1 - m)],
+    [o.width * m, o.height * (1 - m)]
+  ]).map(a => a.slice());
+  $('cm').hidden = false;
+  cmDraw();
+}
+const cmc = $('cmc'), cpos = e => {
+  const r = cmc.getBoundingClientRect();
+  return [(e.clientX - r.left) * cmc.width / r.width / cs, (e.clientY - r.top) * cmc.height / r.height / cs];
+};
+cmc.onpointerdown = e => {
+  const [px, py] = cpos(e);
+  let b = -1, bd = 1e9;
+  cq.forEach((p, i) => { const d = Math.hypot(p[0] - px, p[1] - py) * cs; if (d < bd) { bd = d; b = i; } });
+  if (bd < 50) { drag = b; cmc.setPointerCapture(e.pointerId); }
+};
+cmc.onpointermove = e => {
+  if (drag < 0) return;
+  const [px, py] = cpos(e), o = cp.orig;
+  cq[drag] = [Math.max(0, Math.min(o.width, px)), Math.max(0, Math.min(o.height, py))];
+  cmDraw();
+};
+cmc.onpointerup = cmc.onpointercancel = () => { drag = -1; };
+$('cmCancel').onclick = () => { $('cm').hidden = true; };
+$('cmAuto').onclick = () => {
+  const q = detectQuad(cp.orig);
+  if (q) { cq = q; cmDraw(); } else alert('Could not find the paper edges automatically. Please drag the corners by hand.');
+};
+$('cmRot').onclick = () => {
+  const o = cp.orig, n = mk(o.height, o.width), x = n.getContext('2d');
+  x.translate(o.height, 0);
+  x.rotate(Math.PI / 2);
+  x.drawImage(o, 0, 0);
+  cq = cq.map(p => [o.height - p[1], p[0]]);
+  cp.orig = n;
+  sizeCm();
+  cmDraw();
+};
+$('cmOk').onclick = () => {
+  cp.quad = cq.map(a => a.slice());
+  cp.raw = toA4(applyQuad(cp.orig, cq));
+  cp.out = null;
+  $('cm').hidden = true;
+  render();
+};
+
+/* ---------- UITS Cover Page Builder (jsPDF Vector Layout) ---------- */
+let COVER = null;
+try { COVER = JSON.parse(localStorage.getItem("uitsCover") || "null"); } catch (e) {}
+
+function buildUitsCoverPdf(v) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "mm", format: "a4" }); // 210 x 297 mm
+  const PW = 210, PH = 297, CX = PW / 2;
+  const logoSrc = (COVER && COVER.logo) || window.UITS_LOGO;
+
+  let y = 16;
+  if (logoSrc) {
+    // 605 x 102 proportion
+    const lw = 150, lh = lw * (102 / 605);
+    doc.addImage(logoSrc, "PNG", CX - lw / 2, y, lw, lh);
+    y += lh + 6;
+  }
+
+  // Document Title / Header area
+  const topicText = v.topic || v.heading;
+  if (topicText) {
+    doc.setFont("times", "bold");
+    doc.setFontSize(21);
+    doc.text(v.typeLine || "Assignment", CX, y + 8, { align: "center" });
+
+    doc.setFont("times", "normal");
+    doc.setFontSize(15);
+    doc.text("on", CX, y + 16, { align: "center" });
+
+    doc.setFont("times", "normal");
+    doc.setFontSize(19);
+    doc.text(topicText, CX, y + 25, { align: "center" });
+    y += 35;
+  } else {
+    // Document Type (Assignment / Lab Report / etc.)
+    doc.setFont("times", "normal");
+    doc.setFontSize(20);
+    doc.text(v.typeLine || "Assignment", CX, y + 8, { align: "center" });
+    // Underline
+    const tw = doc.getTextWidth(v.typeLine || "Assignment");
+    doc.setLineWidth(0.3);
+    doc.line(CX - tw / 2, y + 9.5, CX + tw / 2, y + 9.5);
+    y += 20;
+  }
+
+  // Course Details
+  doc.setFont("times", "normal");
+  doc.setFontSize(14);
+  const leftX = 25, colonX = 64;
+
+  const drawRow = (label, val) => {
+    doc.text(label, leftX, y);
+    doc.text(": " + (val || ""), colonX, y);
+    y += 7.5;
+  };
+
+  drawRow("Course Title", v.courseTitle);
+  drawRow("Course Code", v.courseCode);
+  if (v.expNo) drawRow("Experiment No", v.expNo);
+
+  // Submitted To
+  y += 8;
+  doc.setFont("times", "normal");
+  doc.text("Submitted to:", leftX, y);
+  const stw = doc.getTextWidth("Submitted to:");
+  doc.line(leftX, y + 1, leftX + stw, y + 1);
+  y += 7;
+
+  const tMode = Number(v.teacherMode || 1);
+  if (tMode === 2) {
+    const tColStarts = [25, 115];
+    const topY = y;
+    let t1y = topY;
+    if (v.teacher) { doc.setFont("times", "bold"); doc.text(v.teacher, tColStarts[0], t1y); t1y += 5.5; }
+    doc.setFont("times", "normal");
+    if (v.designation) { doc.text(v.designation, tColStarts[0], t1y); t1y += 5.5; }
+    if (v.tDeptLine) { doc.text(v.tDeptLine, tColStarts[0], t1y); t1y += 5.5; }
+    if (v.uni) { doc.text(v.uni, tColStarts[0], t1y); t1y += 5.5; }
+
+    let t2y = topY;
+    if (v.teacher2) { doc.setFont("times", "bold"); doc.text(v.teacher2, tColStarts[1], t2y); t2y += 5.5; }
+    doc.setFont("times", "normal");
+    if (v.designation2) { doc.text(v.designation2, tColStarts[1], t2y); t2y += 5.5; }
+    if (v.tDeptLine2) { doc.text(v.tDeptLine2, tColStarts[1], t2y); t2y += 5.5; }
+    if (v.uni2) { doc.text(v.uni2, tColStarts[1], t2y); t2y += 5.5; }
+
+    y = Math.max(t1y, t2y);
+  } else {
+    if (v.teacher) {
+      doc.setFont("times", "bold");
+      doc.text(v.teacher, leftX, y);
+      y += 5.5;
+    }
+    doc.setFont("times", "normal");
+    if (v.designation) { doc.text(v.designation, leftX, y); y += 5.5; }
+    if (v.tDeptLine) { doc.text(v.tDeptLine, leftX, y); y += 5.5; }
+    if (v.uni) { doc.text(v.uni, leftX, y); y += 5.5; }
+  }
+
+  // Submitted By
+  y += 12;
+  const mode = Number(v.teamMode || 1);
+
+  if (mode === 1) {
+    // Individual
+    doc.setFont("times", "normal");
+    doc.text("Submitted by:", leftX, y);
+    const sbw = doc.getTextWidth("Submitted by:");
+    doc.line(leftX, y + 1, leftX + sbw, y + 1);
+    y += 7.5;
+
+    const byColonX = 72;
+    const drawByRow = (label, val) => {
+      doc.text(label, leftX, y);
+      doc.text(": " + (val || ""), byColonX, y);
+      y += 6.5;
+    };
+
+    drawByRow("Name", v.name);
+    drawByRow("ID", v.sid);
+    drawByRow("Semester", v.semester);
+    drawByRow("Section", v.section);
+    drawByRow("Batch", v.batch);
+    drawByRow("Department", v.dept);
+    drawByRow("Date of Submission", v.dateStr);
+  } else {
+    // Team mode (2, 3, or 4 members)
+    doc.setFont("times", "bold");
+    doc.text("Submitted by", leftX, y);
+    y += 7;
+
+    const count = mode;
+    const teamMembers = [
+      { name: v.m1_name || v.name, sid: v.m1_sid || v.sid, dept: v.m1_dept || v.dept, section: v.m1_sec || v.section },
+      { name: v.m2_name, sid: v.m2_sid, dept: v.m2_dept || v.m1_dept || v.dept, section: v.m2_sec || v.m1_sec || v.section },
+      { name: v.m3_name, sid: v.m3_sid, dept: v.m3_dept || v.m1_dept || v.dept, section: v.m3_sec || v.m1_sec || v.section },
+      { name: v.m4_name, sid: v.m4_sid, dept: v.m4_dept || v.m1_dept || v.dept, section: v.m4_sec || v.m1_sec || v.section },
+    ].slice(0, count);
+
+    const fSize = count === 4 ? 10.5 : count === 3 ? 12 : 13;
+    doc.setFont("times", "normal");
+    doc.setFontSize(fSize);
+
+    const colWidths = { 2: 80, 3: 54, 4: 41 };
+    const colStarts = {
+      2: [25, 115],
+      3: [24, 82, 140],
+      4: [22, 65, 108, 151],
+    };
+
+    const startXList = colStarts[count] || [25, 115];
+    const topY = y;
+
+    teamMembers.forEach((m, idx) => {
+      let my = topY;
+      const mx = startXList[idx];
+      doc.text("Name: " + (m.name || ""), mx, my); my += 5.5;
+      doc.text("ID: " + (m.sid || ""), mx, my); my += 5.5;
+      doc.text("Department: " + (m.dept || ""), mx, my); my += 5.5;
+      doc.text("Section: " + (m.section || ""), mx, my);
+    });
+
+    y = topY + (5.5 * 3) + 9;
+    doc.setFontSize(14);
+    doc.text("Date of Submission", leftX, y);
+    doc.text(": " + (v.dateStr || ""), 72, y);
+  }
+
+  return doc;
+}
+
+// Check saved cover state
+(() => {
+  const cb = $('useCover'), info = $('coverInfo');
+  if (COVER && COVER.complete) {
+    const v = COVER.v;
+    const memberName = v.teamMode > 1 ? (v.m1_name || v.name || "Team") : v.name;
+    const memberId = v.teamMode > 1 ? (v.m1_sid || v.sid || "") : v.sid;
+    info.textContent = `${COVER.docLabel || 'Assignment'} · ${v.courseCode || ''} · ${memberName} (${memberId})`;
+    if (/[?&]cover=1/.test(location.search) || !location.search) cb.checked = true;
+    
+    // Auto populate default PDF filename if blank
+    if (!$('fn').value) {
+      const code = (v.courseCode || "").replace(/\s+/g, "");
+      const type = (v.typeLine || "Assignment").replace(/[\s.\-]+/g, "_");
+      const id = memberId || "UITS";
+      $('fn').value = [type, code, id].filter(Boolean).join("_");
+    }
+  } else {
+    cb.disabled = true;
+    info.innerHTML = COVER
+      ? 'Cover page details are incomplete. <a href="index.html">Fill them in</a> to use it.'
+      : 'No cover page saved yet. <a href="index.html">Create one</a> to use it.';
+  }
+})();
+
+$('useCover').onchange = () => {
+  $('dl').disabled = !pages.length && !($('useCover').checked && COVER && COVER.complete);
+};
+
+// Create merged PDF download
+$('dl').onclick = () => {
+  const { jsPDF } = window.jspdf || {};
+  if (!jsPDF) { $('st').textContent = 'PDF library failed to load'; return; }
+  const withCover = $('useCover').checked && COVER && COVER.complete;
+  if (!pages.length && !withCover) {
+    $('st').textContent = 'Add at least one page or select your cover page';
+    return;
+  }
+
+  let doc;
+  if (withCover) {
+    doc = buildUitsCoverPdf(COVER.v);
+  } else {
+    doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  }
+
+  pages.forEach((p, i) => {
+    if (i || withCover) doc.addPage('a4', 'portrait');
+    doc.addImage(p.out.toDataURL('image/jpeg', .88), 'JPEG', 0, 0, 210, 297);
+  });
+
+  const rawFn = $('fn').value.trim().replace(/[\\/:*?"<>|]+/g, '_');
+  const finalName = (rawFn || (withCover ? 'Assignment_Merged' : 'Scanned_Assignment')) + '.pdf';
+  doc.save(finalName);
+  $('st').textContent = `Downloaded: ${finalName} (${withCover ? pages.length + 1 : pages.length} pages total)`;
+};
+</script>
+</body>
+</html>
