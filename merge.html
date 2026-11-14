@@ -251,6 +251,21 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   box-shadow: 0 2px 12px rgba(0,0,0,.15);
   background: #fff;
 }
+  /* Phones: bigger checkboxes and touch targets */
+  @media screen and (max-width: 760px) {
+    input[type="checkbox"] {
+      width: 22px;
+      height: 22px;
+      vertical-align: middle;
+    }
+    #themeBtn {
+      min-height: 40px;
+    }
+    input[type="text"],
+    select {
+      font-size: 16px; /* stops iPhone zooming in on focus */
+    }
+  }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>

@@ -3,24 +3,6 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script>
-      // Phones: show the desktop layout (form + preview side by side) shrunk to fit the screen
-      (function () {
-        const root = document.documentElement;
-        function phoneZoom() {
-          const w = Math.min(screen.width, root.clientWidth || screen.width);
-          const isPhone = Math.min(screen.width, screen.height) < 700;
-          root.classList.toggle("phone", isPhone);
-          root.style.setProperty(
-            "--phone-zoom",
-            isPhone ? Math.min(1, w / 1000) : 1,
-          );
-        }
-        phoneZoom();
-        window.addEventListener("resize", phoneZoom);
-        window.addEventListener("orientationchange", phoneZoom);
-      })();
-    </script>
     <title>UITS Cover Page Generator</title>
     <script>
       try {
@@ -516,59 +498,194 @@
         }
       }
 
-      /* Phone: desktop layout at a fixed 1000px width, content sits at the top */
-      html.phone,
-      html.phone body {
-        height: auto;
+      /* Mobile tabs: hidden on desktop */
+      .m-tabs {
+        display: none;
       }
-      html.phone body {
-        display: block;
-        width: 1000px;
-        zoom: var(--phone-zoom, 1);
-      }
-      html.phone main {
-        grid-template-columns: 1.15fr 1fr;
-        align-items: stretch;
-      }
-      html.phone form.panel {
-        align-content: space-between;
-        overflow: visible;
-      }
-      html.phone label {
-        font-size: 12px;
-        margin: 6px 0 3px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      html.phone .section-title {
-        font-size: 11px;
-        margin-top: 10px;
-      }
-      html.phone .section-title:first-child {
-        margin-top: 0;
-      }
-      html.phone input,
-      html.phone select,
-      html.phone .btn-small,
-      html.phone .check-pill {
-        height: 34px;
-        font-size: 14px;
-      }
-      html.phone .btn-small {
-        font-size: 12px;
-      }
-      html.phone .btn {
-        height: 40px;
-        font-size: 15px;
-      }
-      html.phone .actions {
-        margin-top: 14px;
-      }
-      html.phone .page-wrap {
-        flex: none;
-        aspect-ratio: 794 / 1123;
-        height: auto;
+
+      /* ---------- Phone layout (desktop is unaffected) ---------- */
+      @media screen and (max-width: 760px),
+        screen and (max-width: 1000px) and (max-height: 500px) and (pointer: coarse) {
+        html,
+        body {
+          height: auto;
+        }
+        body {
+          display: block;
+          padding-bottom: calc(80px + env(safe-area-inset-bottom));
+        }
+        header {
+          padding: 12px 16px 4px;
+          align-items: center;
+          flex-wrap: nowrap;
+          gap: 10px;
+        }
+        header h1 {
+          font-size: 18px;
+          line-height: 1.25;
+        }
+        .theme-btn {
+          flex-shrink: 0;
+          white-space: nowrap;
+          padding: 8px 12px;
+        }
+        .m-tabs {
+          display: flex;
+          gap: 8px;
+          position: sticky;
+          top: 0;
+          z-index: 20;
+          padding: 8px 12px;
+          background: var(--bg);
+        }
+        .m-tabs button {
+          flex: 1;
+          height: 44px;
+          border-radius: 10px;
+          border: 1px solid var(--border);
+          background: var(--panel);
+          color: var(--text);
+          font: 600 16px/1 inherit;
+          font-family: inherit;
+          cursor: pointer;
+        }
+        .m-tabs button[aria-selected="true"] {
+          background: var(--maroon);
+          border-color: var(--maroon);
+          color: #fff;
+        }
+        main {
+          display: block;
+          padding: 4px 12px 16px;
+        }
+
+        /* Form: two columns, full-width by default */
+        form.panel {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          column-gap: 12px;
+          align-content: start;
+          overflow: visible;
+          padding: 14px;
+        }
+        .f1,
+        .f2,
+        .f3,
+        .f4,
+        .f6 {
+          grid-column: span 2;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
+        }
+        /* short fields share a row */
+        .f1,
+        .f2:has(> #docTypeSelect),
+        .f2:has(> #docNo),
+        .f2:has(> #courseCode),
+        .f2:has(> #expNo),
+        .f2:has(> #designation),
+        .f2:has(> #tDept),
+        .f2:has(> #designation2),
+        .f2:has(> #tDept2),
+        .f2:has(> #semester),
+        .f2:has(> #section),
+        .f2:has(> #batch),
+        .f6:has(> #dept) {
+          grid-column: span 1;
+        }
+        .section-title,
+        .team-m-hdr {
+          grid-column: span 2;
+        }
+        .section-title {
+          font-size: 13px;
+          margin-top: 20px;
+          padding-bottom: 4px;
+        }
+        .section-title:first-child {
+          margin-top: 0;
+        }
+        .team-m-hdr {
+          font-size: 12px;
+          margin-top: 14px;
+        }
+        label {
+          font-size: 14px;
+          margin: 12px 0 5px;
+        }
+        input,
+        select {
+          height: 44px;
+          font-size: 16px; /* 16px stops iPhone from zooming in on focus */
+          padding: 6px 12px;
+        }
+        .check-pill-group {
+          flex-wrap: nowrap;
+        }
+        .check-pill {
+          flex: 1;
+          min-width: 0;
+          height: 44px;
+          font-size: 16px;
+        }
+        .clear-wrap {
+          margin-top: 10px;
+        }
+        .btn-small {
+          height: 44px;
+          font-size: 15px;
+        }
+        #mergeWrap {
+          grid-column: span 2 !important;
+          margin-top: 20px !important;
+        }
+        #mergeWrap .btn {
+          height: 48px;
+          font-size: 15px;
+        }
+
+        /* Download buttons pinned to the bottom of the screen */
+        .actions {
+          position: fixed;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          z-index: 30;
+          margin: 0;
+          padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+          background: var(--panel);
+          border-top: 1px solid var(--border);
+          box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.12);
+        }
+        .actions .btn {
+          height: 48px;
+          font-size: 14px;
+          padding: 0 6px;
+          white-space: nowrap;
+        }
+
+        /* Tabs: show either the form or the preview */
+        .preview-panel {
+          display: none;
+          padding: 12px;
+        }
+        body[data-mtab="preview"] .preview-panel {
+          display: block;
+        }
+        body[data-mtab="preview"] form.panel {
+          display: block;
+          padding: 0;
+          border: 0;
+          background: none;
+        }
+        body[data-mtab="preview"] form.panel > :not(.actions) {
+          display: none !important;
+        }
+        .page-wrap {
+          flex: none;
+          height: auto;
+          aspect-ratio: 794 / 1123;
+        }
       }
 
       @media print {
@@ -588,6 +705,7 @@
           width: auto !important;
         }
         header,
+        .m-tabs,
         form.panel,
         .preview-label {
           display: none !important;
@@ -630,6 +748,11 @@
         aria-label="Toggle dark mode"
       ></button>
     </header>
+
+    <nav class="m-tabs" aria-label="Form or preview">
+      <button type="button" data-tab="form" aria-selected="true">Form</button>
+      <button type="button" data-tab="preview" aria-selected="false">Preview</button>
+    </nav>
 
     <main>
       <form class="panel" id="form" autocomplete="on" onsubmit="return false;">
@@ -959,7 +1082,7 @@
             Download PDF / Print
           </button>
         </div>
-        <div style="grid-column: span 6; margin-top: 8px">
+        <div id="mergeWrap" style="grid-column: span 6; margin-top: 8px">
           <button
             type="button"
             class="btn btn-outline"
@@ -1880,6 +2003,21 @@
           a.remove();
           setTimeout(() => URL.revokeObjectURL(a.href), 2000);
         };
+      })();
+    </script>
+    <script>
+      // Phone tabs: Form / Preview
+      (function () {
+        const tabs = document.querySelectorAll(".m-tabs button");
+        function show(tab) {
+          document.body.dataset.mtab = tab;
+          tabs.forEach((b) =>
+            b.setAttribute("aria-selected", String(b.dataset.tab === tab)),
+          );
+          window.scrollTo(0, 0);
+        }
+        tabs.forEach((b) => b.addEventListener("click", () => show(b.dataset.tab)));
+        show("form");
       })();
     </script>
   </body>
